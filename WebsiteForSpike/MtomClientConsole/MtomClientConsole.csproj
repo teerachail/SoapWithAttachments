@@ -63,6 +63,9 @@
     <None Include="Service References\LocalServiceReference1\MtomClientConsole.LocalServiceReference1.CompositeType.datasource">
       <DependentUpon>Reference.svcmap</DependentUpon>
     </None>
+    <None Include="Service References\LocalServiceReference1\MtomClientConsole.LocalServiceReference1.MyMtomData.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
     <None Include="Service References\LocalServiceReference1\Service1.wsdl" />
     <None Include="Service References\LocalServiceReference1\Service1.xsd">
       <SubType>Designer</SubType>

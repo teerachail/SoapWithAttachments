@@ -59,4 +59,30 @@
       </xs:sequence>
     </xs:complexType>
   </xs:element>
+  <xs:element name="GetMyMtomData">
+    <xs:complexType>
+      <xs:sequence />
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="GetMyMtomDataResponse">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element xmlns:q4="http://schemas.datacontract.org/2004/07/MtomTestSite" minOccurs="0" name="GetMyMtomDataResult" nillable="true" type="q4:MyMtomData" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="RoundTripMyMtomData">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element xmlns:q5="http://schemas.datacontract.org/2004/07/MtomTestSite" minOccurs="0" name="data" nillable="true" type="q5:MyMtomData" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="RoundTripMyMtomDataResponse">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element xmlns:q6="http://schemas.datacontract.org/2004/07/MtomTestSite" minOccurs="0" name="RoundTripMyMtomDataResult" nillable="true" type="q6:MyMtomData" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
 </xs:schema>

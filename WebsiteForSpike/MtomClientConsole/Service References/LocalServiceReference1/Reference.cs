@@ -74,6 +74,83 @@ namespace MtomClientConsole.LocalServiceReference1 {
         }
     }
     
+    [System.Diagnostics.DebuggerStepThroughAttribute()]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Runtime.Serialization", "4.0.0.0")]
+    [System.Runtime.Serialization.DataContractAttribute(Name="MyMtomData", Namespace="http://schemas.datacontract.org/2004/07/MtomTestSite")]
+    [System.SerializableAttribute()]
+    public partial class MyMtomData : object, System.Runtime.Serialization.IExtensibleDataObject, System.ComponentModel.INotifyPropertyChanged {
+        
+        [System.NonSerializedAttribute()]
+        private System.Runtime.Serialization.ExtensionDataObject extensionDataField;
+        
+        [System.Runtime.Serialization.OptionalFieldAttribute()]
+        private byte[] File1Field;
+        
+        [System.Runtime.Serialization.OptionalFieldAttribute()]
+        private byte[] File2Field;
+        
+        [System.Runtime.Serialization.OptionalFieldAttribute()]
+        private string NameField;
+        
+        [global::System.ComponentModel.BrowsableAttribute(false)]
+        public System.Runtime.Serialization.ExtensionDataObject ExtensionData {
+            get {
+                return this.extensionDataField;
+            }
+            set {
+                this.extensionDataField = value;
+            }
+        }
+        
+        [System.Runtime.Serialization.DataMemberAttribute()]
+        public byte[] File1 {
+            get {
+                return this.File1Field;
+            }
+            set {
+                if ((object.ReferenceEquals(this.File1Field, value) != true)) {
+                    this.File1Field = value;
+                    this.RaisePropertyChanged("File1");
+                }
+            }
+        }
+        
+        [System.Runtime.Serialization.DataMemberAttribute()]
+        public byte[] File2 {
+            get {
+                return this.File2Field;
+            }
+            set {
+                if ((object.ReferenceEquals(this.File2Field, value) != true)) {
+                    this.File2Field = value;
+                    this.RaisePropertyChanged("File2");
+                }
+            }
+        }
+        
+        [System.Runtime.Serialization.DataMemberAttribute()]
+        public string Name {
+            get {
+                return this.NameField;
+            }
+            set {
+                if ((object.ReferenceEquals(this.NameField, value) != true)) {
+                    this.NameField = value;
+                    this.RaisePropertyChanged("Name");
+                }
+            }
+        }
+        
+        public event System.ComponentModel.PropertyChangedEventHandler PropertyChanged;
+        
+        protected void RaisePropertyChanged(string propertyName) {
+            System.ComponentModel.PropertyChangedEventHandler propertyChanged = this.PropertyChanged;
+            if ((propertyChanged != null)) {
+                propertyChanged(this, new System.ComponentModel.PropertyChangedEventArgs(propertyName));
+            }
+        }
+    }
+    
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.ServiceModel", "4.0.0.0")]
     [System.ServiceModel.ServiceContractAttribute(ConfigurationName="LocalServiceReference1.IService1")]
     public interface IService1 {
@@ -101,6 +178,18 @@ namespace MtomClientConsole.LocalServiceReference1 {
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IService1/GetDataUsingDataContract", ReplyAction="http://tempuri.org/IService1/GetDataUsingDataContractResponse")]
         System.Threading.Tasks.Task<MtomClientConsole.LocalServiceReference1.CompositeType> GetDataUsingDataContractAsync(MtomClientConsole.LocalServiceReference1.CompositeType composite);
+        
+        [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IService1/GetMyMtomData", ReplyAction="http://tempuri.org/IService1/GetMyMtomDataResponse")]
+        MtomClientConsole.LocalServiceReference1.MyMtomData GetMyMtomData();
+        
+        [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IService1/GetMyMtomData", ReplyAction="http://tempuri.org/IService1/GetMyMtomDataResponse")]
+        System.Threading.Tasks.Task<MtomClientConsole.LocalServiceReference1.MyMtomData> GetMyMtomDataAsync();
+        
+        [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IService1/RoundTripMyMtomData", ReplyAction="http://tempuri.org/IService1/RoundTripMyMtomDataResponse")]
+        MtomClientConsole.LocalServiceReference1.MyMtomData RoundTripMyMtomData(MtomClientConsole.LocalServiceReference1.MyMtomData data);
+        
+        [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IService1/RoundTripMyMtomData", ReplyAction="http://tempuri.org/IService1/RoundTripMyMtomDataResponse")]
+        System.Threading.Tasks.Task<MtomClientConsole.LocalServiceReference1.MyMtomData> RoundTripMyMtomDataAsync(MtomClientConsole.LocalServiceReference1.MyMtomData data);
     }
     
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.ServiceModel", "4.0.0.0")]
@@ -160,6 +249,22 @@ namespace MtomClientConsole.LocalServiceReference1 {
         
         public System.Threading.Tasks.Task<MtomClientConsole.LocalServiceReference1.CompositeType> GetDataUsingDataContractAsync(MtomClientConsole.LocalServiceReference1.CompositeType composite) {
             return base.Channel.GetDataUsingDataContractAsync(composite);
+        }
+        
+        public MtomClientConsole.LocalServiceReference1.MyMtomData GetMyMtomData() {
+            return base.Channel.GetMyMtomData();
+        }
+        
+        public System.Threading.Tasks.Task<MtomClientConsole.LocalServiceReference1.MyMtomData> GetMyMtomDataAsync() {
+            return base.Channel.GetMyMtomDataAsync();
+        }
+        
+        public MtomClientConsole.LocalServiceReference1.MyMtomData RoundTripMyMtomData(MtomClientConsole.LocalServiceReference1.MyMtomData data) {
+            return base.Channel.RoundTripMyMtomData(data);
+        }
+        
+        public System.Threading.Tasks.Task<MtomClientConsole.LocalServiceReference1.MyMtomData> RoundTripMyMtomDataAsync(MtomClientConsole.LocalServiceReference1.MyMtomData data) {
+            return base.Channel.RoundTripMyMtomDataAsync(data);
         }
     }
 }
