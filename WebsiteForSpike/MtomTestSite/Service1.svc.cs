@@ -25,7 +25,9 @@ namespace MtomTestSite
 
         public string GetDataLenStream(Stream data)
         {
-            return string.Format("Data Length: {0}", data.Length);
+            byte[] buffer = new byte[2048];
+            var n = data.Read(buffer, 0, buffer.Length);
+            return string.Format("Data Length: {0}", n);
         }
 
         public CompositeType GetDataUsingDataContract(CompositeType composite)

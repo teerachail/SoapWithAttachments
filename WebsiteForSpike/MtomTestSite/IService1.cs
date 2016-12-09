@@ -25,7 +25,22 @@ namespace MtomTestSite
         [OperationContract]
         CompositeType GetDataUsingDataContract(CompositeType composite);
 
-        // TODO: Add your service operations here
+        [OperationContract]
+        MyMtomData GetMyMtomData();
+
+        [OperationContract]
+        MyMtomData RoundTripMyMtomData(MyMtomData data);
+    }
+
+    [DataContract]
+    public class MyMtomData
+    {
+        [DataMember]
+        public string Name { get; set; }
+        [DataMember]
+        public byte[] File1 { get; set; }
+        [DataMember]
+        public byte[] File2 { get; set; }
     }
 
 
