@@ -58,6 +58,18 @@
   <wsdl:message name="IService1_GetDataUsingDataContract_OutputMessage">
     <wsdl:part name="parameters" element="tns:GetDataUsingDataContractResponse" />
   </wsdl:message>
+  <wsdl:message name="IService1_GetMyMtomData_InputMessage">
+    <wsdl:part name="parameters" element="tns:GetMyMtomData" />
+  </wsdl:message>
+  <wsdl:message name="IService1_GetMyMtomData_OutputMessage">
+    <wsdl:part name="parameters" element="tns:GetMyMtomDataResponse" />
+  </wsdl:message>
+  <wsdl:message name="IService1_RoundTripMyMtomData_InputMessage">
+    <wsdl:part name="parameters" element="tns:RoundTripMyMtomData" />
+  </wsdl:message>
+  <wsdl:message name="IService1_RoundTripMyMtomData_OutputMessage">
+    <wsdl:part name="parameters" element="tns:RoundTripMyMtomDataResponse" />
+  </wsdl:message>
   <wsdl:portType name="IService1">
     <wsdl:operation name="GetData">
       <wsdl:input wsaw:Action="http://tempuri.org/IService1/GetData" message="tns:IService1_GetData_InputMessage" />
@@ -74,6 +86,14 @@
     <wsdl:operation name="GetDataUsingDataContract">
       <wsdl:input wsaw:Action="http://tempuri.org/IService1/GetDataUsingDataContract" message="tns:IService1_GetDataUsingDataContract_InputMessage" />
       <wsdl:output wsaw:Action="http://tempuri.org/IService1/GetDataUsingDataContractResponse" message="tns:IService1_GetDataUsingDataContract_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="GetMyMtomData">
+      <wsdl:input wsaw:Action="http://tempuri.org/IService1/GetMyMtomData" message="tns:IService1_GetMyMtomData_InputMessage" />
+      <wsdl:output wsaw:Action="http://tempuri.org/IService1/GetMyMtomDataResponse" message="tns:IService1_GetMyMtomData_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="RoundTripMyMtomData">
+      <wsdl:input wsaw:Action="http://tempuri.org/IService1/RoundTripMyMtomData" message="tns:IService1_RoundTripMyMtomData_InputMessage" />
+      <wsdl:output wsaw:Action="http://tempuri.org/IService1/RoundTripMyMtomDataResponse" message="tns:IService1_RoundTripMyMtomData_OutputMessage" />
     </wsdl:operation>
   </wsdl:portType>
   <wsdl:binding name="BasicHttpBinding_IService1" type="tns:IService1">
@@ -114,6 +134,24 @@
         <soap:body use="literal" />
       </wsdl:output>
     </wsdl:operation>
+    <wsdl:operation name="GetMyMtomData">
+      <soap:operation soapAction="http://tempuri.org/IService1/GetMyMtomData" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="RoundTripMyMtomData">
+      <soap:operation soapAction="http://tempuri.org/IService1/RoundTripMyMtomData" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
   </wsdl:binding>
   <wsdl:binding name="BasicHttpsBinding_IService1" type="tns:IService1">
     <wsp:PolicyReference URI="#BasicHttpsBinding_IService1_policy" />
@@ -147,6 +185,24 @@
     </wsdl:operation>
     <wsdl:operation name="GetDataUsingDataContract">
       <soap:operation soapAction="http://tempuri.org/IService1/GetDataUsingDataContract" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetMyMtomData">
+      <soap:operation soapAction="http://tempuri.org/IService1/GetMyMtomData" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="RoundTripMyMtomData">
+      <soap:operation soapAction="http://tempuri.org/IService1/RoundTripMyMtomData" style="document" />
       <wsdl:input>
         <soap:body use="literal" />
       </wsdl:input>

@@ -28,6 +28,11 @@ namespace MtomClientConsole
                 var ms = new MemoryStream(new byte[512]);
                 var rsp2 = svc.GetDataLenStream(ms);
                 Console.WriteLine(rsp2);
+
+                var rsp3 = svc.GetMyMtomData();
+                Console.WriteLine(rsp3.Name);
+                Console.WriteLine(rsp3.File1.Length);
+                Console.WriteLine(rsp3.File2.Length);
             }
         }
     }

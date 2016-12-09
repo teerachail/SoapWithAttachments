@@ -7,4 +7,12 @@
     </xs:sequence>
   </xs:complexType>
   <xs:element name="CompositeType" nillable="true" type="tns:CompositeType" />
+  <xs:complexType name="MyMtomData">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="File1" nillable="true" type="xs:base64Binary" />
+      <xs:element minOccurs="0" name="File2" nillable="true" type="xs:base64Binary" />
+      <xs:element minOccurs="0" name="Name" nillable="true" type="xs:string" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="MyMtomData" nillable="true" type="tns:MyMtomData" />
 </xs:schema>
