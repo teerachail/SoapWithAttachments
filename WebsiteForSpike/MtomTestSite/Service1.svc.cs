@@ -48,8 +48,8 @@ namespace MtomTestSite
             return new MtomTestSite.MyMtomData
             {
                 Name = string.Format("My Mtom Data @{0}", DateTime.Now),
-                File1 = new byte[21500],
-                File2 = new byte[58009],
+                File1 = new byte[31500],
+                File2 = new byte[32009],
             };
         }
 
