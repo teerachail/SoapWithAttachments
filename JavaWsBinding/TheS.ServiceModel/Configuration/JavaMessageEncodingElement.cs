@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Configuration;
 using System.Linq;
 using System.ServiceModel.Channels;
 using System.ServiceModel.Configuration;
@@ -17,6 +19,14 @@ namespace TheS.ServiceModel.Configuration
             {
                 return typeof(JavaMessageEncodingBindingElement);
             }
+        }
+
+        [ConfigurationProperty(ConfigurationStrings.MessageVersion, DefaultValue = TextEncoderDefaults.MessageVersionString)]
+        [TypeConverter(typeof(MessageVersionConverter))]
+        public MessageVersion MessageVersion
+        {
+            get { return (MessageVersion)base[ConfigurationStrings.MessageVersion]; }
+            set { base[ConfigurationStrings.MessageVersion] = value; }
         }
 
         protected override BindingElement CreateBindingElement()

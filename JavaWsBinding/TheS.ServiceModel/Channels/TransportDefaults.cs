@@ -38,7 +38,9 @@ namespace TheS.ServiceModel.Channels
         internal static readonly Encoding Encoding = Encoding.GetEncoding(TextEncoderDefaults.EncodingString, new EncoderExceptionFallback(), new DecoderExceptionFallback());
         internal const string EncodingString = "utf-8";
         internal static readonly Encoding[] SupportedEncodings = new Encoding[] { Encoding.UTF8, Encoding.Unicode, Encoding.BigEndianUnicode };
-        internal const string MessageVersionString = TheS.ServiceModel.Configuration.ConfigurationStrings.Soap12WSAddressing10;
+        internal const string MessageVersionString = TheS.ServiceModel.Configuration.ConfigurationStrings.Soap11;
+        // Somkiet's feedback, which tell us this default is not work.
+        //internal const string MessageVersionString = TheS.ServiceModel.Configuration.ConfigurationStrings.Soap12WSAddressing10;
         internal static readonly CharSetEncoding[] CharSetEncodings = new CharSetEncoding[]
         {
             new CharSetEncoding("utf-8", Encoding.UTF8),
