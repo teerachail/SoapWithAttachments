@@ -371,7 +371,7 @@ namespace TheS.ServiceModel.Channels
 
         public override Message ReadMessage(Stream stream, int maxSizeOfHeaders, string contentType)
         {
-            return this.ReadMessage(stream, maxSizeOfHeaders, contentType);
+            return this.innerMessageEncoder.ReadMessage(stream, maxSizeOfHeaders, contentType);
         }
 
         public override void WriteMessage(Message message, Stream stream)

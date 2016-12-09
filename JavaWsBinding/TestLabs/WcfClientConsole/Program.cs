@@ -10,7 +10,7 @@ namespace WcfClientConsole
     {
         static void Main(string[] args)
         {
-            using (var svc = new ServiceReference1.Service1Client())
+            using (var svc = new ServiceReference1.Service1Client("TestEndpoint"))
             {
                 var rsp = svc.GetData(200);
                 Console.WriteLine(rsp);

@@ -92,6 +92,12 @@
       <LastGenOutput>Reference.cs</LastGenOutput>
     </None>
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\TheS.ServiceModel\TheS.ServiceModel.csproj">
+      <Project>{01b7c82b-7897-4aca-86a9-da19a223ffa9}</Project>
+      <Name>TheS.ServiceModel</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
