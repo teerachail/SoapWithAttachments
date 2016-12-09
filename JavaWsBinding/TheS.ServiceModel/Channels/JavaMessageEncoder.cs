@@ -10,11 +10,20 @@ namespace TheS.ServiceModel.Channels
 {
     class JavaMessageEncoderFactory : MessageEncoderFactory
     {
+        private JavaMessageEncoder encoder;
+        private MessageVersion version;
+
+        public JavaMessageEncoderFactory(MessageVersion version)
+        {
+            this.version = version;
+            this.encoder = new JavaMessageEncoder(version);
+        }
+
         public override MessageEncoder Encoder
         {
             get
             {
-                throw new NotImplementedException();
+                return this.encoder;
             }
         }
 
@@ -22,18 +31,28 @@ namespace TheS.ServiceModel.Channels
         {
             get
             {
-                throw new NotImplementedException();
+                return this.version;
             }
         }
     }
 
     class JavaMessageEncoder : MessageEncoder
     {
+        private MessageVersion version;
+        private MessageEncoder innerMessageEncoder;
+
+        public JavaMessageEncoder(MessageVersion version)
+        {
+            this.version = version;
+            this.innerMessageEncoder = new MtomMessageEncodingBindingElement(
+                version, Encoding.UTF8).CreateMessageEncoderFactory().Encoder;
+        }
+
         public override string ContentType
         {
             get
             {
-                throw new NotImplementedException();
+                return this.innerMessageEncoder.ContentType;
             }
         }
 
@@ -41,7 +60,7 @@ namespace TheS.ServiceModel.Channels
         {
             get
             {
-                throw new NotImplementedException();
+                return this.innerMessageEncoder.MediaType;
             }
         }
 
@@ -49,28 +68,28 @@ namespace TheS.ServiceModel.Channels
         {
             get
             {
-                throw new NotImplementedException();
+                return this.version;
             }
         }
 
         public override Message ReadMessage(ArraySegment<byte> buffer, BufferManager bufferManager, string contentType)
         {
-            throw new NotImplementedException();
+            return this.innerMessageEncoder.ReadMessage(buffer, bufferManager, contentType);
         }
 
         public override Message ReadMessage(Stream stream, int maxSizeOfHeaders, string contentType)
         {
-            throw new NotImplementedException();
+            return this.ReadMessage(stream, maxSizeOfHeaders, contentType);
         }
 
         public override void WriteMessage(Message message, Stream stream)
         {
-            throw new NotImplementedException();
+            this.innerMessageEncoder.WriteMessage(message, stream);
         }
 
         public override ArraySegment<byte> WriteMessage(Message message, int maxMessageSize, BufferManager bufferManager, int messageOffset)
         {
-            throw new NotImplementedException();
+            return this.innerMessageEncoder.WriteMessage(message, maxMessageSize, bufferManager, messageOffset);
         }
     }
 }

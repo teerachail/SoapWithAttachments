@@ -5,6 +5,7 @@ using System.ServiceModel.Channels;
 using System.ServiceModel.Configuration;
 using System.Text;
 using System.Threading.Tasks;
+using TheS.ServiceModel.Channels;
 
 namespace TheS.ServiceModel.Configuration
 {
@@ -14,13 +15,15 @@ namespace TheS.ServiceModel.Configuration
         {
             get
             {
-                throw new NotImplementedException();
+                return typeof(JavaMessageEncodingBindingElement);
             }
         }
 
         protected override BindingElement CreateBindingElement()
         {
-            throw new NotImplementedException();
+            JavaMessageEncodingBindingElement bindingElement = new JavaMessageEncodingBindingElement();
+            ApplyConfiguration(bindingElement);
+            return bindingElement;
         }
     }
 }

@@ -9,27 +9,28 @@ namespace TheS.ServiceModel.Channels
 {
     class JavaMessageEncodingBindingElement : MessageEncodingBindingElement
     {
+        private MessageVersion msgVersion = MessageVersion.Default;
+
         public override MessageVersion MessageVersion
         {
             get
             {
-                throw new NotImplementedException();
+                return this.msgVersion;
             }
-
             set
             {
-                throw new NotImplementedException();
+                this.msgVersion = value;
             }
         }
 
         public override BindingElement Clone()
         {
-            throw new NotImplementedException();
+            return this;
         }
 
         public override MessageEncoderFactory CreateMessageEncoderFactory()
         {
-            throw new NotImplementedException();
+            return new JavaMessageEncoderFactory(MessageVersion);
         }
     }
 }
