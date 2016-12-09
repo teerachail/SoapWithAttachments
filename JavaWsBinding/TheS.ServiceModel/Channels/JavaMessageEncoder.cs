@@ -300,79 +300,79 @@ namespace TheS.ServiceModel.Channels
             }
         }
 
-        public override Message ReadMessage(ArraySegment<byte> buffer, BufferManager bufferManager, string contentType)
-        {
-            //if (bufferManager == null)
-            //    throw new ArgumentNullException("bufferManager");
-
-            //if (contentType == this.ContentType)
-            //    contentType = null;
-
-            ////if (TD.MtomMessageDecodingStartIsEnabled())
-            ////{
-            ////    TD.MtomMessageDecodingStart();
-            ////}
-
-            //MtomBufferedMessageData messageData = TakeBufferedReader();
-            //messageData.ContentType = contentType;
-            //messageData.Open(buffer, bufferManager);
-            //RecycledMessageState messageState = messageData.TakeMessageState();
-            //if (messageState == null)
-            //    messageState = new RecycledMessageState();
-            //Message message = new BufferedMessage(messageData, messageState);
-            //message.Properties.Encoder = this;
-            ////if (MessageLogger.LogMessagesAtTransportLevel)
-            ////    MessageLogger.LogMessage(ref message, MessageLoggingSource.TransportReceive);
-
-            ////if (TD.MessageReadByEncoderIsEnabled() && buffer != null)
-            ////{
-            ////    TD.MessageReadByEncoder(
-            ////        EventTraceActivityHelper.TryExtractActivity(message, true),
-            ////        buffer.Count,
-            ////        this);
-            ////}
-
-            //return message;
-
-            throw new NotSupportedException();
-        }
-
-        public override Message ReadMessage(Stream stream, int maxSizeOfHeaders, string contentType)
-        {
-            if (stream == null)
-                throw new ArgumentNullException("stream");
-
-            if (contentType == this.ContentType)
-                contentType = null;
-
-            //if (TD.MtomMessageDecodingStartIsEnabled())
-            //{
-            //    TD.MtomMessageDecodingStart();
-            //}
-
-            XmlReader reader = TakeStreamedReader(stream, contentType);
-            Message message = Message.CreateMessage(reader, maxSizeOfHeaders, version);
-            message.Properties.Encoder = this;
-
-            //if (TD.StreamedMessageReadByEncoderIsEnabled())
-            //{
-            //    TD.StreamedMessageReadByEncoder(EventTraceActivityHelper.TryExtractActivity(message, true));
-            //}
-
-            //if (MessageLogger.LogMessagesAtTransportLevel)
-            //    MessageLogger.LogMessage(ref message, MessageLoggingSource.TransportReceive);
-            return message;
-        }
-
         //public override Message ReadMessage(ArraySegment<byte> buffer, BufferManager bufferManager, string contentType)
         //{
-        //    return this.innerMessageEncoder.ReadMessage(buffer, bufferManager, contentType);
+        //    //if (bufferManager == null)
+        //    //    throw new ArgumentNullException("bufferManager");
+
+        //    //if (contentType == this.ContentType)
+        //    //    contentType = null;
+
+        //    ////if (TD.MtomMessageDecodingStartIsEnabled())
+        //    ////{
+        //    ////    TD.MtomMessageDecodingStart();
+        //    ////}
+
+        //    //MtomBufferedMessageData messageData = TakeBufferedReader();
+        //    //messageData.ContentType = contentType;
+        //    //messageData.Open(buffer, bufferManager);
+        //    //RecycledMessageState messageState = messageData.TakeMessageState();
+        //    //if (messageState == null)
+        //    //    messageState = new RecycledMessageState();
+        //    //Message message = new BufferedMessage(messageData, messageState);
+        //    //message.Properties.Encoder = this;
+        //    ////if (MessageLogger.LogMessagesAtTransportLevel)
+        //    ////    MessageLogger.LogMessage(ref message, MessageLoggingSource.TransportReceive);
+
+        //    ////if (TD.MessageReadByEncoderIsEnabled() && buffer != null)
+        //    ////{
+        //    ////    TD.MessageReadByEncoder(
+        //    ////        EventTraceActivityHelper.TryExtractActivity(message, true),
+        //    ////        buffer.Count,
+        //    ////        this);
+        //    ////}
+
+        //    //return message;
+
+        //    throw new NotSupportedException();
         //}
 
         //public override Message ReadMessage(Stream stream, int maxSizeOfHeaders, string contentType)
         //{
-        //    return this.ReadMessage(stream, maxSizeOfHeaders, contentType);
+        //    if (stream == null)
+        //        throw new ArgumentNullException("stream");
+
+        //    if (contentType == this.ContentType)
+        //        contentType = null;
+
+        //    //if (TD.MtomMessageDecodingStartIsEnabled())
+        //    //{
+        //    //    TD.MtomMessageDecodingStart();
+        //    //}
+
+        //    XmlReader reader = TakeStreamedReader(stream, contentType);
+        //    Message message = Message.CreateMessage(reader, maxSizeOfHeaders, version);
+        //    message.Properties.Encoder = this;
+
+        //    //if (TD.StreamedMessageReadByEncoderIsEnabled())
+        //    //{
+        //    //    TD.StreamedMessageReadByEncoder(EventTraceActivityHelper.TryExtractActivity(message, true));
+        //    //}
+
+        //    //if (MessageLogger.LogMessagesAtTransportLevel)
+        //    //    MessageLogger.LogMessage(ref message, MessageLoggingSource.TransportReceive);
+        //    return message;
         //}
+
+        public override Message ReadMessage(ArraySegment<byte> buffer, BufferManager bufferManager, string contentType)
+        {
+            return this.innerMessageEncoder.ReadMessage(buffer, bufferManager, contentType);
+        }
+
+        public override Message ReadMessage(Stream stream, int maxSizeOfHeaders, string contentType)
+        {
+            return this.ReadMessage(stream, maxSizeOfHeaders, contentType);
+        }
 
         public override void WriteMessage(Message message, Stream stream)
         {
