@@ -42,5 +42,21 @@ namespace MtomTestSite
             }
             return composite;
         }
+
+        public MyMtomData GetMyMtomData()
+        {
+            return new MtomTestSite.MyMtomData
+            {
+                Name = string.Format("My Mtom Data @{0}", DateTime.Now),
+                File1 = new byte[215],
+                File2 = new byte[128],
+            };
+        }
+
+        public MyMtomData RoundTripMyMtomData(MyMtomData data)
+        {
+            data.Name = string.Format("Received: {0}", data.Name);
+            return data;
+        }
     }
 }
