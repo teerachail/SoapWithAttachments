@@ -46,6 +46,24 @@ namespace TheS.ServiceModel.Channels
             return new JavaMessageEncoderFactory(MessageVersion, this.maxBufferSize, this.readerQuotas);
         }
 
+        public override IChannelFactory<TChannel> BuildChannelFactory<TChannel>(BindingContext context)
+        {
+            context.BindingParameters.Add(this);
+            return context.BuildInnerChannelFactory<TChannel>();
+        }
+        public override IChannelListener<TChannel> BuildChannelListener<TChannel>(BindingContext context)
+        {
+            context.BindingParameters.Add(this);
+            return context.BuildInnerChannelListener<TChannel>();
+        }
+        public override bool CanBuildChannelFactory<TChannel>(BindingContext context)
+        {
+            return context.CanBuildInnerChannelFactory<TChannel>();
+        }
+        public override bool CanBuildChannelListener<TChannel>(BindingContext context)
+        {
+            return context.CanBuildInnerChannelListener<TChannel>();
+        }
 
         void IPolicyExportExtension.ExportPolicy(MetadataExporter exporter, PolicyConversionContext policyContext)
         {
@@ -72,6 +90,7 @@ namespace TheS.ServiceModel.Channels
             SoapHelper.SetSoapVersion(context, exporter, this.version.Envelope);
         }
     }
+
     static class MessageEncodingPolicyConstants
     {
         public const string BinaryEncodingName = "BinaryEncoding";
