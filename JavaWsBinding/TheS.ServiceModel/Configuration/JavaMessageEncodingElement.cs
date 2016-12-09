@@ -21,6 +21,20 @@ namespace TheS.ServiceModel.Configuration
             }
         }
 
+        public override void ApplyConfiguration(BindingElement bindingElement)
+        {
+            base.ApplyConfiguration(bindingElement);
+
+            JavaMessageEncodingBindingElement binding = (JavaMessageEncodingBindingElement)bindingElement;
+            binding.MessageVersion = this.MessageVersion;
+//            binding.WriteEncoding = this.WriteEncoding;
+//            binding.MaxReadPoolSize = this.MaxReadPoolSize;
+//            binding.MaxWritePoolSize = this.MaxWritePoolSize;
+//#pragma warning suppress 56506 //[....]; base.ApplyConfiguration() checks for 'binding' being null
+//            this.ReaderQuotas.ApplyConfiguration(binding.ReaderQuotas);
+            //binding.MaxBufferSize = this.MaxBufferSize;
+        }
+
         [ConfigurationProperty(ConfigurationStrings.MessageVersion, DefaultValue = TextEncoderDefaults.MessageVersionString)]
         [TypeConverter(typeof(MessageVersionConverter))]
         public MessageVersion MessageVersion
@@ -31,7 +45,7 @@ namespace TheS.ServiceModel.Configuration
 
         protected override BindingElement CreateBindingElement()
         {
-            JavaMessageEncodingBindingElement bindingElement = new JavaMessageEncodingBindingElement();
+            JavaMessageEncodingBindingElement bindingElement = new JavaMessageEncodingBindingElement(MessageVersion);
             ApplyConfiguration(bindingElement);
             return bindingElement;
         }

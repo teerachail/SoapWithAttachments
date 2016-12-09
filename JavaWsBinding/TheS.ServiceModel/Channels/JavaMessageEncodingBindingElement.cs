@@ -14,8 +14,9 @@ namespace TheS.ServiceModel.Channels
         private XmlDictionaryReaderQuotas readerQuotas;
         private int maxBufferSize;
 
-        public JavaMessageEncodingBindingElement()
+        public JavaMessageEncodingBindingElement(MessageVersion version)
         {
+            this.msgVersion = version;
             this.readerQuotas = new XmlDictionaryReaderQuotas();
             EncoderDefaults.ReaderQuotas.CopyTo(this.readerQuotas);
             this.maxBufferSize = MtomEncoderDefaults.MaxBufferSize;
