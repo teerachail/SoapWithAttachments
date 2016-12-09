@@ -4,12 +4,22 @@ using System.Linq;
 using System.ServiceModel.Channels;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml;
 
 namespace TheS.ServiceModel.Channels
 {
     class JavaMessageEncodingBindingElement : MessageEncodingBindingElement
     {
         private MessageVersion msgVersion = MessageVersion.Default;
+        private XmlDictionaryReaderQuotas readerQuotas;
+        private int maxBufferSize;
+
+        public JavaMessageEncodingBindingElement()
+        {
+            this.readerQuotas = new XmlDictionaryReaderQuotas();
+            EncoderDefaults.ReaderQuotas.CopyTo(this.readerQuotas);
+            this.maxBufferSize = MtomEncoderDefaults.MaxBufferSize;
+        }
 
         public override MessageVersion MessageVersion
         {
@@ -30,7 +40,7 @@ namespace TheS.ServiceModel.Channels
 
         public override MessageEncoderFactory CreateMessageEncoderFactory()
         {
-            return new JavaMessageEncoderFactory(MessageVersion);
+            return new JavaMessageEncoderFactory(MessageVersion, this.maxBufferSize, this.readerQuotas);
         }
     }
 }

@@ -45,6 +45,8 @@
   <ItemGroup>
     <Compile Include="Channels\JavaMessageEncoder.cs" />
     <Compile Include="Channels\JavaMessageEncodingBindingElement.cs" />
+    <Compile Include="Channels\TransportDefaults.cs" />
+    <Compile Include="Configuration\ConfigurationStrings.cs" />
     <Compile Include="Configuration\JavaMessageEncodingElement.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
