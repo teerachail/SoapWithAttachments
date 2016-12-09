@@ -49,7 +49,7 @@ namespace MtomTestSite
             {
                 Name = string.Format("My Mtom Data @{0}", DateTime.Now),
                 File1 = new byte[21500],
-                File2 = new byte[128009],
+                File2 = new byte[58009],
             };
         }
 
