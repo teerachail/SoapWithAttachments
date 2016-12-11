@@ -44,15 +44,38 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Channels\DelegatingStream.cs" />
     <Compile Include="Channels\JavaMessageEncoder.cs" />
     <Compile Include="Channels\JavaMessageEncodingBindingElement.cs" />
+    <Compile Include="Channels\MaxMessageSizeStream.cs" />
     <Compile Include="Channels\TransportDefaults.cs" />
     <Compile Include="Configuration\ConfigurationStrings.cs" />
+    <Compile Include="Configuration\EncodingConverter.cs" />
     <Compile Include="Configuration\JavaMessageEncodingElement.cs" />
     <Compile Include="Configuration\MessageVersionConverter.cs" />
     <Compile Include="Description\SoapHelper.cs" />
+    <Compile Include="Diagnostics\DiagnosticStrings.cs" />
+    <Compile Include="Diagnostics\DiagnosticTraceBase.cs" />
+    <Compile Include="Diagnostics\EtwDiagnosticTrace.cs" />
+    <Compile Include="Diagnostics\ExceptionUtility.cs" />
+    <Compile Include="Diagnostics\ITraceSourceStringProvider.cs" />
+    <Compile Include="Diagnostics\TraceRecord.cs" />
+    <Compile Include="DiagnosticUtility.cs" />
+    <Compile Include="ExceptionHelper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="_Runtime\AssertHelper.cs" />
+    <Compile Include="_Runtime\CallbackException.cs" />
+    <Compile Include="_Runtime\ExceptionTrace.cs" />
+    <Compile Include="_Runtime\FatalException.cs" />
+    <Compile Include="_Runtime\Fx.cs" />
+    <Compile Include="_Runtime\FxCop.cs" />
+    <Compile Include="_Runtime\InternalSR.cs" />
+    <Compile Include="_Runtime\SynchronizedPool.cs" />
+    <Compile Include="_Runtime\TraceChannel.cs" />
+    <Compile Include="_Runtime\TracePayload.cs" />
+    <Compile Include="_\FxTrace.cs" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

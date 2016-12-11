@@ -10,16 +10,17 @@ using System.ServiceModel.Channels;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
+using TheS.Runtime;
 
 namespace TheS.ServiceModel.Channels
 {
     class JavaMessageEncoderFactory : MessageEncoderFactory
     {
         private JavaMessageEncoder encoder;
-        private MessageVersion version;
+        //private MessageVersion version;
 
-        private XmlDictionaryReaderQuotas readerQuotas;
-        private int maxBufferSize;
+        //private XmlDictionaryReaderQuotas readerQuotas;
+        //private int maxBufferSize;
 
         internal static ContentEncoding[] Soap11Content = GetContentEncodingMap(MessageVersion.Soap11WSAddressing10);
         internal static ContentEncoding[] Soap12Content = GetContentEncodingMap(MessageVersion.Soap12WSAddressing10);
@@ -28,13 +29,13 @@ namespace TheS.ServiceModel.Channels
         internal const string Soap12MediaType = "application/soap+xml";
         internal const string XmlMediaType = "application/xml";
 
-        public JavaMessageEncoderFactory(MessageVersion version, int maxBufferSize, XmlDictionaryReaderQuotas readerQuotas)
+        public JavaMessageEncoderFactory(MessageVersion version, Encoding writeEncoding, int maxReadPoolSize, int maxWritePoolSize, int maxBufferSize, XmlDictionaryReaderQuotas quotas)
         {
-            this.version = version;
-            this.readerQuotas = readerQuotas;
-            this.maxBufferSize = maxBufferSize;
+            //this.version = version;
+            //this.readerQuotas = readerQuotas;
+            //this.maxBufferSize = maxBufferSize;
 
-            this.encoder = new JavaMessageEncoder(version, maxBufferSize, readerQuotas);
+            this.encoder = new JavaMessageEncoder(version, writeEncoding, maxReadPoolSize, maxWritePoolSize, maxBufferSize, quotas);
         }
 
         public override MessageEncoder Encoder
@@ -47,10 +48,30 @@ namespace TheS.ServiceModel.Channels
 
         public override MessageVersion MessageVersion
         {
+            get { return encoder.MessageVersion; }
+        }
+
+        public int MaxWritePoolSize
+        {
+            get { return encoder.MaxWritePoolSize; }
+        }
+
+        public int MaxReadPoolSize
+        {
+            get { return encoder.MaxReadPoolSize; }
+        }
+
+        public XmlDictionaryReaderQuotas ReaderQuotas
+        {
             get
             {
-                return this.version;
+                return encoder.ReaderQuotas;
             }
+        }
+
+        public int MaxBufferSize
+        {
+            get { return encoder.MaxBufferSize; }
         }
 
         public static Encoding[] GetSupportedEncodings()
@@ -242,22 +263,46 @@ namespace TheS.ServiceModel.Channels
         private MessageVersion version;
         private MessageEncoder innerMessageEncoder;
 
-        private XmlDictionaryReaderQuotas readerQuotas;
-        private int maxBufferSize;
+        volatile SynchronizedPool<XmlDictionaryReader> streamedReaderPool;
+        object thisLock;
+        const int maxPooledXmlReadersPerMessage = 2;
+        int maxReadPoolSize;
+        int maxWritePoolSize;
+        //static UriGenerator mimeBoundaryGenerator;
+        XmlDictionaryReaderQuotas readerQuotas;
+        //XmlDictionaryReaderQuotas bufferedReadReaderQuotas;
+        int maxBufferSize;
 
         internal JavaMessageEncoderFactory.ContentEncoding[] contentEncodingMap;
         OnXmlDictionaryReaderClose onStreamedReaderClose;
 
-        private Encoding writeEncoding = Encoding.UTF8;
+        private Encoding writeEncoding;
 
-        public JavaMessageEncoder(MessageVersion version, int maxBufferSize, XmlDictionaryReaderQuotas readerQuotas)
+        public JavaMessageEncoder(MessageVersion version, Encoding writeEncoding, int maxReadPoolSize, int maxWritePoolSize, int maxBufferSize, XmlDictionaryReaderQuotas quotas)
         {
             this.version = version;
-            this.innerMessageEncoder = new MtomMessageEncodingBindingElement(
-                version, Encoding.UTF8).CreateMessageEncoderFactory().Encoder;
+            var bindingElement = new MtomMessageEncodingBindingElement(
+                version, Encoding.UTF8);
 
-            this.readerQuotas = readerQuotas;
+            bindingElement.WriteEncoding = writeEncoding;
+            bindingElement.MaxReadPoolSize = maxReadPoolSize;
+            bindingElement.MaxWritePoolSize = maxWritePoolSize;
+            bindingElement.MaxBufferSize = maxBufferSize;
+            this.innerMessageEncoder = bindingElement.CreateMessageEncoderFactory().Encoder;
+
+            this.writeEncoding = writeEncoding;
+
+            this.maxReadPoolSize = maxReadPoolSize;
+            this.maxWritePoolSize = maxWritePoolSize;
+
+            this.readerQuotas = new XmlDictionaryReaderQuotas();
+            quotas.CopyTo(this.readerQuotas);
+
+            //this.bufferedReadReaderQuotas = EncoderHelpers.GetBufferedReadQuotas(this.readerQuotas);
+
             this.maxBufferSize = maxBufferSize;
+
+            this.thisLock = new object();
 
             this.onStreamedReaderClose = new OnXmlDictionaryReaderClose(ReturnStreamedReader);
 
@@ -300,79 +345,102 @@ namespace TheS.ServiceModel.Channels
             }
         }
 
-        //public override Message ReadMessage(ArraySegment<byte> buffer, BufferManager bufferManager, string contentType)
-        //{
-        //    //if (bufferManager == null)
-        //    //    throw new ArgumentNullException("bufferManager");
+        public int MaxWritePoolSize
+        {
+            get { return maxWritePoolSize; }
+        }
 
-        //    //if (contentType == this.ContentType)
-        //    //    contentType = null;
+        public int MaxReadPoolSize
+        {
+            get { return maxReadPoolSize; }
+        }
 
-        //    ////if (TD.MtomMessageDecodingStartIsEnabled())
-        //    ////{
-        //    ////    TD.MtomMessageDecodingStart();
-        //    ////}
+        public XmlDictionaryReaderQuotas ReaderQuotas
+        {
+            get
+            {
+                return readerQuotas;
+            }
+        }
 
-        //    //MtomBufferedMessageData messageData = TakeBufferedReader();
-        //    //messageData.ContentType = contentType;
-        //    //messageData.Open(buffer, bufferManager);
-        //    //RecycledMessageState messageState = messageData.TakeMessageState();
-        //    //if (messageState == null)
-        //    //    messageState = new RecycledMessageState();
-        //    //Message message = new BufferedMessage(messageData, messageState);
-        //    //message.Properties.Encoder = this;
-        //    ////if (MessageLogger.LogMessagesAtTransportLevel)
-        //    ////    MessageLogger.LogMessage(ref message, MessageLoggingSource.TransportReceive);
-
-        //    ////if (TD.MessageReadByEncoderIsEnabled() && buffer != null)
-        //    ////{
-        //    ////    TD.MessageReadByEncoder(
-        //    ////        EventTraceActivityHelper.TryExtractActivity(message, true),
-        //    ////        buffer.Count,
-        //    ////        this);
-        //    ////}
-
-        //    //return message;
-
-        //    throw new NotSupportedException();
-        //}
-
-        //public override Message ReadMessage(Stream stream, int maxSizeOfHeaders, string contentType)
-        //{
-        //    if (stream == null)
-        //        throw new ArgumentNullException("stream");
-
-        //    if (contentType == this.ContentType)
-        //        contentType = null;
-
-        //    //if (TD.MtomMessageDecodingStartIsEnabled())
-        //    //{
-        //    //    TD.MtomMessageDecodingStart();
-        //    //}
-
-        //    XmlReader reader = TakeStreamedReader(stream, contentType);
-        //    Message message = Message.CreateMessage(reader, maxSizeOfHeaders, version);
-        //    message.Properties.Encoder = this;
-
-        //    //if (TD.StreamedMessageReadByEncoderIsEnabled())
-        //    //{
-        //    //    TD.StreamedMessageReadByEncoder(EventTraceActivityHelper.TryExtractActivity(message, true));
-        //    //}
-
-        //    //if (MessageLogger.LogMessagesAtTransportLevel)
-        //    //    MessageLogger.LogMessage(ref message, MessageLoggingSource.TransportReceive);
-        //    return message;
-        //}
+        public int MaxBufferSize
+        {
+            get { return maxBufferSize; }
+        }
 
         public override Message ReadMessage(ArraySegment<byte> buffer, BufferManager bufferManager, string contentType)
         {
-            return this.innerMessageEncoder.ReadMessage(buffer, bufferManager, contentType);
+            //if (bufferManager == null)
+            //    throw new ArgumentNullException("bufferManager");
+
+            //if (contentType == this.ContentType)
+            //    contentType = null;
+
+            ////if (TD.MtomMessageDecodingStartIsEnabled())
+            ////{
+            ////    TD.MtomMessageDecodingStart();
+            ////}
+
+            //MtomBufferedMessageData messageData = TakeBufferedReader();
+            //messageData.ContentType = contentType;
+            //messageData.Open(buffer, bufferManager);
+            //RecycledMessageState messageState = messageData.TakeMessageState();
+            //if (messageState == null)
+            //    messageState = new RecycledMessageState();
+            //Message message = new BufferedMessage(messageData, messageState);
+            //message.Properties.Encoder = this;
+            ////if (MessageLogger.LogMessagesAtTransportLevel)
+            ////    MessageLogger.LogMessage(ref message, MessageLoggingSource.TransportReceive);
+
+            ////if (TD.MessageReadByEncoderIsEnabled() && buffer != null)
+            ////{
+            ////    TD.MessageReadByEncoder(
+            ////        EventTraceActivityHelper.TryExtractActivity(message, true),
+            ////        buffer.Count,
+            ////        this);
+            ////}
+
+            //return message;
+
+            throw new NotSupportedException();
         }
 
         public override Message ReadMessage(Stream stream, int maxSizeOfHeaders, string contentType)
         {
-            return this.innerMessageEncoder.ReadMessage(stream, maxSizeOfHeaders, contentType);
+            if (stream == null)
+                throw new ArgumentNullException("stream");
+
+            if (contentType == this.ContentType)
+                contentType = null;
+
+            //if (TD.MtomMessageDecodingStartIsEnabled())
+            //{
+            //    TD.MtomMessageDecodingStart();
+            //}
+
+            XmlReader reader = TakeStreamedReader(stream, contentType);
+            Message message = Message.CreateMessage(reader, maxSizeOfHeaders, version);
+            message.Properties.Encoder = this;
+
+            //if (TD.StreamedMessageReadByEncoderIsEnabled())
+            //{
+            //    TD.StreamedMessageReadByEncoder(EventTraceActivityHelper.TryExtractActivity(message, true));
+            //}
+
+            //if (MessageLogger.LogMessagesAtTransportLevel)
+            //    MessageLogger.LogMessage(ref message, MessageLoggingSource.TransportReceive);
+            return message;
         }
+
+        //public override Message ReadMessage(ArraySegment<byte> buffer, BufferManager bufferManager, string contentType)
+        //{
+        //    return this.innerMessageEncoder.ReadMessage(buffer, bufferManager, contentType);
+        //}
+
+        //public override Message ReadMessage(Stream stream, int maxSizeOfHeaders, string contentType)
+        //{
+        //    return this.innerMessageEncoder.ReadMessage(stream, maxSizeOfHeaders, contentType);
+        //}
 
         public override void WriteMessage(Message message, Stream stream)
         {
@@ -386,19 +454,19 @@ namespace TheS.ServiceModel.Channels
 
         XmlReader TakeStreamedReader(Stream stream, string contentType)
         {
-            //if (streamedReaderPool == null)
-            //{
-            //    lock (thisLock)
-            //    {
-            //        if (streamedReaderPool == null)
-            //        {
-            //            streamedReaderPool = new SynchronizedPool<XmlDictionaryReader>(maxReadPoolSize);
-            //        }
-            //    }
-            //}
+            if (streamedReaderPool == null)
+            {
+                lock (thisLock)
+                {
+                    if (streamedReaderPool == null)
+                    {
+                        streamedReaderPool = new SynchronizedPool<XmlDictionaryReader>(maxReadPoolSize);
+                    }
+                }
+            }
 
-            //XmlDictionaryReader xmlReader = streamedReaderPool.Take();
-            XmlDictionaryReader xmlReader = null;
+            XmlDictionaryReader xmlReader = streamedReaderPool.Take();
+            //XmlDictionaryReader xmlReader = null;
             try
             {
                 if (contentType == null || IsMTOMContentType(contentType))
@@ -440,7 +508,7 @@ namespace TheS.ServiceModel.Channels
 
         void ReturnStreamedReader(XmlDictionaryReader xmlReader)
         {
-            //streamedReaderPool.Return(xmlReader);
+            streamedReaderPool.Return(xmlReader);
         }
 
         internal bool IsMTOMContentType(string contentType)

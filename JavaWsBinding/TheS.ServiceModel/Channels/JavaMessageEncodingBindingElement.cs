@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.ServiceModel.Channels;
 using System.ServiceModel.Description;
@@ -16,12 +17,108 @@ namespace TheS.ServiceModel.Channels
         private XmlDictionaryReaderQuotas readerQuotas;
         private int maxBufferSize;
 
-        public JavaMessageEncodingBindingElement(MessageVersion version)
+        private int maxReadPoolSize;
+        private int maxWritePoolSize;
+        private Encoding writeEncoding;
+
+        public JavaMessageEncodingBindingElement(MessageVersion messageVersion, Encoding writeEncoding)
         {
-            this.version = version;
+            if (messageVersion == null)
+                throw DiagnosticUtility.ExceptionUtility.ThrowHelperArgumentNull("messageVersion");
+
+            if (messageVersion == MessageVersion.None)
+                throw DiagnosticUtility.ExceptionUtility.ThrowHelperError(new ArgumentException(string.Format("SR.MtomEncoderBadMessageVersion, {0}", messageVersion.ToString()), "messageVersion"));
+
+            if (writeEncoding == null)
+                throw DiagnosticUtility.ExceptionUtility.ThrowHelperArgumentNull("writeEncoding");
+
+            this.version = messageVersion;
+
+            this.maxReadPoolSize = EncoderDefaults.MaxReadPoolSize;
+            this.maxWritePoolSize = EncoderDefaults.MaxWritePoolSize;
             this.readerQuotas = new XmlDictionaryReaderQuotas();
             EncoderDefaults.ReaderQuotas.CopyTo(this.readerQuotas);
             this.maxBufferSize = MtomEncoderDefaults.MaxBufferSize;
+            this.writeEncoding = writeEncoding;
+        }
+
+        [DefaultValue(EncoderDefaults.MaxReadPoolSize)]
+        public int MaxReadPoolSize
+        {
+            get
+            {
+                return this.maxReadPoolSize;
+            }
+            set
+            {
+                if (value <= 0)
+                {
+                    throw DiagnosticUtility.ExceptionUtility.ThrowHelperError(new ArgumentOutOfRangeException("value", value,
+                                                    "SR.ValueMustBePositive"));
+                }
+                this.maxReadPoolSize = value;
+            }
+        }
+
+        [DefaultValue(EncoderDefaults.MaxWritePoolSize)]
+        public int MaxWritePoolSize
+        {
+            get
+            {
+                return this.maxWritePoolSize;
+            }
+            set
+            {
+                if (value <= 0)
+                {
+                    throw DiagnosticUtility.ExceptionUtility.ThrowHelperError(new ArgumentOutOfRangeException("value", value,
+                                                    "SR.ValueMustBePositive"));
+                }
+                this.maxWritePoolSize = value;
+            }
+        }
+
+        public XmlDictionaryReaderQuotas ReaderQuotas
+        {
+            get
+            {
+                return this.readerQuotas;
+            }
+        }
+
+        [DefaultValue(MtomEncoderDefaults.MaxBufferSize)]
+        public int MaxBufferSize
+        {
+            get
+            {
+                return this.maxBufferSize;
+            }
+            set
+            {
+                if (value <= 0)
+                {
+                    throw DiagnosticUtility.ExceptionUtility.ThrowHelperError(new ArgumentOutOfRangeException("value", value,
+                                                    "SR.ValueMustBePositive"));
+                }
+                this.maxBufferSize = value;
+            }
+        }
+
+        [TypeConverter(typeof(TheS.ServiceModel.Configuration.EncodingConverter))]
+        public Encoding WriteEncoding
+        {
+            get
+            {
+                return this.writeEncoding;
+            }
+            set
+            {
+                if (value == null)
+                    throw DiagnosticUtility.ExceptionUtility.ThrowHelperArgumentNull("value");
+
+                TextEncoderDefaults.ValidateEncoding(value);
+                this.writeEncoding = value;
+            }
         }
 
         public override MessageVersion MessageVersion
@@ -43,7 +140,7 @@ namespace TheS.ServiceModel.Channels
 
         public override MessageEncoderFactory CreateMessageEncoderFactory()
         {
-            return new JavaMessageEncoderFactory(MessageVersion, this.maxBufferSize, this.readerQuotas);
+            return new JavaMessageEncoderFactory(MessageVersion, this.writeEncoding, this.MaxReadPoolSize, this.maxWritePoolSize, this.maxBufferSize, this.readerQuotas);
         }
 
         public override IChannelFactory<TChannel> BuildChannelFactory<TChannel>(BindingContext context)
