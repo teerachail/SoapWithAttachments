@@ -935,7 +935,10 @@ namespace TheS.Xml
         internal static string TypeParam = "type";
         internal static string XopMediaType = "application";
         internal static string XopMediaSubtype = "xop+xml";
+        internal static string SwaMediaType = "text";
+        internal static string SwaMediaSubType = "xml";
         internal static string XopType = "application/xop+xml";
+        internal static string SwaType = "text/xml";
         internal static string StartParam = "start";
         internal static string StartInfoParam = "start-info";
         internal static string ActionParam = "action";

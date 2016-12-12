@@ -151,7 +151,7 @@ namespace TheS.Xml
                 throw DiagnosticUtility.ExceptionUtility.ThrowHelperError(new XmlException(string.Format("SR.MtomMessageNotMultipart, {0}, {1}", MtomGlobals.MediaType, MtomGlobals.MediaSubtype)));
 
             string type;
-            if (!header.Parameters.TryGetValue(MtomGlobals.TypeParam, out type) || MtomGlobals.XopType != type)
+            if (!header.Parameters.TryGetValue(MtomGlobals.TypeParam, out type) || (MtomGlobals.XopType != type && MtomGlobals.SwaType != type))
                 throw DiagnosticUtility.ExceptionUtility.ThrowHelperError(new XmlException(string.Format("SR.MtomMessageNotApplicationXopXml, {0}", MtomGlobals.XopType)));
 
             if (!header.Parameters.TryGetValue(MtomGlobals.BoundaryParam, out boundary))
@@ -171,8 +171,10 @@ namespace TheS.Xml
             if (header == null)
                 throw DiagnosticUtility.ExceptionUtility.ThrowHelperError(new XmlException("SR.MtomRootContentTypeNotFound"));
 
-            if (String.Compare(MtomGlobals.XopMediaType, header.MediaType, StringComparison.OrdinalIgnoreCase) != 0
-                || String.Compare(MtomGlobals.XopMediaSubtype, header.MediaSubtype, StringComparison.OrdinalIgnoreCase) != 0)
+            if ((String.Compare(MtomGlobals.XopMediaType, header.MediaType, StringComparison.OrdinalIgnoreCase) != 0
+                && String.Compare(MtomGlobals.SwaMediaType, header.MediaType, StringComparison.OrdinalIgnoreCase) != 0)
+                || (String.Compare(MtomGlobals.XopMediaSubtype, header.MediaSubtype, StringComparison.OrdinalIgnoreCase) != 0
+                && String.Compare(MtomGlobals.SwaMediaSubType, header.MediaSubtype, StringComparison.OrdinalIgnoreCase) != 0))
                 throw DiagnosticUtility.ExceptionUtility.ThrowHelperError(new XmlException(string.Format("SR.MtomRootNotApplicationXopXml, {0}, {1}", MtomGlobals.XopMediaType, MtomGlobals.XopMediaSubtype)));
 
             string charset;
@@ -227,15 +229,15 @@ namespace TheS.Xml
                 }
             }
 
-            if (expectedType != null)
-            {
-                string rootType;
-                if (!header.Parameters.TryGetValue(MtomGlobals.TypeParam, out rootType)
-                    || rootType == null || rootType.Length == 0)
-                    throw DiagnosticUtility.ExceptionUtility.ThrowHelperError(new XmlException(string.Format("SR.MtomRootRequiredParamNotSpecified, {0}", MtomGlobals.TypeParam)));
-                if (rootType != expectedType)
-                    throw DiagnosticUtility.ExceptionUtility.ThrowHelperError(new XmlException(string.Format("SR.MtomRootUnexpectedType, {0}, {1}", rootType, expectedType)));
-            }
+            //if (expectedType != null)
+            //{
+            //    string rootType;
+            //    if (!header.Parameters.TryGetValue(MtomGlobals.TypeParam, out rootType)
+            //        || rootType == null || rootType.Length == 0)
+            //        throw DiagnosticUtility.ExceptionUtility.ThrowHelperError(new XmlException(string.Format("SR.MtomRootRequiredParamNotSpecified, {0}", MtomGlobals.TypeParam)));
+            //    if (rootType != expectedType)
+            //        throw DiagnosticUtility.ExceptionUtility.ThrowHelperError(new XmlException(string.Format("SR.MtomRootUnexpectedType, {0}, {1}", rootType, expectedType)));
+            //}
 
             return encoding;
         }
