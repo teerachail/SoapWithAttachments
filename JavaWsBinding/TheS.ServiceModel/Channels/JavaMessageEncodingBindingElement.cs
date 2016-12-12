@@ -42,6 +42,18 @@ namespace TheS.ServiceModel.Channels
             this.writeEncoding = writeEncoding;
         }
 
+        public JavaMessageEncodingBindingElement(JavaMessageEncodingBindingElement elementToBeCloned)
+            : base(elementToBeCloned)
+        {
+            this.maxReadPoolSize = elementToBeCloned.maxReadPoolSize;
+            this.maxWritePoolSize = elementToBeCloned.maxWritePoolSize;
+            this.readerQuotas = new XmlDictionaryReaderQuotas();
+            elementToBeCloned.readerQuotas.CopyTo(this.readerQuotas);
+            this.maxBufferSize = elementToBeCloned.maxBufferSize;
+            this.writeEncoding = elementToBeCloned.writeEncoding;
+            this.version = elementToBeCloned.version;
+        }
+
         [DefaultValue(EncoderDefaults.MaxReadPoolSize)]
         public int MaxReadPoolSize
         {
@@ -135,7 +147,7 @@ namespace TheS.ServiceModel.Channels
 
         public override BindingElement Clone()
         {
-            return this;
+            return new JavaMessageEncodingBindingElement(this);
         }
 
         public override MessageEncoderFactory CreateMessageEncoderFactory()

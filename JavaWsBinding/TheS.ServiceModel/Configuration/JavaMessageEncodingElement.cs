@@ -7,6 +7,7 @@ using System.ServiceModel.Channels;
 using System.ServiceModel.Configuration;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml;
 using TheS.ServiceModel.Channels;
 
 namespace TheS.ServiceModel.Configuration
@@ -30,22 +31,21 @@ namespace TheS.ServiceModel.Configuration
             binding.WriteEncoding = this.WriteEncoding;
             binding.MaxReadPoolSize = this.MaxReadPoolSize;
             binding.MaxWritePoolSize = this.MaxWritePoolSize;
-//#pragma warning suppress 56506 //[....]; base.ApplyConfiguration() checks for 'binding' being null
-//            this.ReaderQuotas.ApplyConfiguration(binding.ReaderQuotas);
+            ApplyReaderQuotasConfiguration(this.ReaderQuotas, binding.ReaderQuotas);
             binding.MaxBufferSize = this.MaxBufferSize;
         }
 
-        //protected internal override void InitializeFrom(BindingElement bindingElement)
-        //{
-        //    base.InitializeFrom(bindingElement);
-        //    MtomMessageEncodingBindingElement binding = (MtomMessageEncodingBindingElement)bindingElement;
-        //    SetPropertyValueIfNotDefaultValue(ConfigurationStrings.MessageVersion, binding.MessageVersion);
-        //    SetPropertyValueIfNotDefaultValue(ConfigurationStrings.WriteEncoding, binding.WriteEncoding);
-        //    SetPropertyValueIfNotDefaultValue(ConfigurationStrings.MaxReadPoolSize, binding.MaxReadPoolSize);
-        //    SetPropertyValueIfNotDefaultValue(ConfigurationStrings.MaxWritePoolSize, binding.MaxWritePoolSize);
-        //    this.ReaderQuotas.InitializeFrom(binding.ReaderQuotas);
-        //    SetPropertyValueIfNotDefaultValue(ConfigurationStrings.MaxBufferSize, binding.MaxBufferSize);
-        //}
+        protected override void InitializeFrom(BindingElement bindingElement)
+        {
+            base.InitializeFrom(bindingElement);
+            JavaMessageEncodingBindingElement binding = (JavaMessageEncodingBindingElement)bindingElement;
+            SetPropertyValueIfNotDefaultValue(ConfigurationStrings.MessageVersion, binding.MessageVersion);
+            SetPropertyValueIfNotDefaultValue(ConfigurationStrings.WriteEncoding, binding.WriteEncoding);
+            SetPropertyValueIfNotDefaultValue(ConfigurationStrings.MaxReadPoolSize, binding.MaxReadPoolSize);
+            SetPropertyValueIfNotDefaultValue(ConfigurationStrings.MaxWritePoolSize, binding.MaxWritePoolSize);
+            InitializeFromReaderQuotas(this.ReaderQuotas, binding.ReaderQuotas);
+            SetPropertyValueIfNotDefaultValue(ConfigurationStrings.MaxBufferSize, binding.MaxBufferSize);
+        }
 
         [ConfigurationProperty(ConfigurationStrings.MaxReadPoolSize, DefaultValue = EncoderDefaults.MaxReadPoolSize)]
         [IntegerValidator(MinValue = 1)]
@@ -99,6 +99,61 @@ namespace TheS.ServiceModel.Configuration
             JavaMessageEncodingBindingElement bindingElement = new JavaMessageEncodingBindingElement(MessageVersion, WriteEncoding);
             ApplyConfiguration(bindingElement);
             return bindingElement;
+        }
+        internal void InitializeFromReaderQuotas(XmlDictionaryReaderQuotasElement quotas, XmlDictionaryReaderQuotas readerQuotas)
+        {
+            if (readerQuotas == null)
+            {
+                throw DiagnosticUtility.ExceptionUtility.ThrowHelperArgumentNull("readerQuotas");
+            }
+            if (readerQuotas.MaxDepth != EncoderDefaults.MaxDepth)
+            {
+                SetPropertyValueIfNotDefaultValue(ConfigurationStrings.MaxDepth, readerQuotas.MaxDepth);
+            }
+            if (readerQuotas.MaxStringContentLength != EncoderDefaults.MaxStringContentLength)
+            {
+                SetPropertyValueIfNotDefaultValue(ConfigurationStrings.MaxStringContentLength, readerQuotas.MaxStringContentLength);
+            }
+            if (readerQuotas.MaxArrayLength != EncoderDefaults.MaxArrayLength)
+            {
+                SetPropertyValueIfNotDefaultValue(ConfigurationStrings.MaxArrayLength, readerQuotas.MaxArrayLength);
+            }
+            if (readerQuotas.MaxBytesPerRead != EncoderDefaults.MaxBytesPerRead)
+            {
+                SetPropertyValueIfNotDefaultValue(ConfigurationStrings.MaxBytesPerRead, readerQuotas.MaxBytesPerRead);
+            }
+            if (readerQuotas.MaxNameTableCharCount != EncoderDefaults.MaxNameTableCharCount)
+            {
+                SetPropertyValueIfNotDefaultValue(ConfigurationStrings.MaxNameTableCharCount, readerQuotas.MaxNameTableCharCount);
+            }
+        }
+
+        internal void ApplyReaderQuotasConfiguration(XmlDictionaryReaderQuotasElement quotas, XmlDictionaryReaderQuotas readerQuotas)
+        {
+            if (readerQuotas == null)
+            {
+                throw DiagnosticUtility.ExceptionUtility.ThrowHelperArgumentNull("readerQuotas");
+            }
+            if (quotas.MaxDepth != 0)
+            {
+                readerQuotas.MaxDepth = quotas.MaxDepth;
+            }
+            if (quotas.MaxStringContentLength != 0)
+            {
+                readerQuotas.MaxStringContentLength = quotas.MaxStringContentLength;
+            }
+            if (quotas.MaxArrayLength != 0)
+            {
+                readerQuotas.MaxArrayLength = quotas.MaxArrayLength;
+            }
+            if (quotas.MaxBytesPerRead != 0)
+            {
+                readerQuotas.MaxBytesPerRead = quotas.MaxBytesPerRead;
+            }
+            if (quotas.MaxNameTableCharCount != 0)
+            {
+                readerQuotas.MaxNameTableCharCount = quotas.MaxNameTableCharCount;
+            }
         }
     }
 }
