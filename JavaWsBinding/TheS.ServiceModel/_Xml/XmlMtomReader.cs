@@ -19,12 +19,6 @@ namespace TheS.Xml
     using Runtime.Serialization;
     using Text;
 
-    public interface IXmlMtomReaderInitializer
-    {
-        void SetInput(byte[] buffer, int offset, int count, Encoding[] encodings, string contentType, XmlDictionaryReaderQuotas quotas, int maxBufferSize, OnXmlDictionaryReaderClose onClose);
-        void SetInput(Stream stream, Encoding[] encodings, string contentType, XmlDictionaryReaderQuotas quotas, int maxBufferSize, OnXmlDictionaryReaderClose onClose);
-    }
-
     class XmlMtomReader : XmlDictionaryReader, IXmlLineInfo, IXmlMtomReaderInitializer
     {
         Encoding[] encodings;

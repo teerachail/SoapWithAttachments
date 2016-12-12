@@ -11,6 +11,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
 using TheS.Runtime;
+using TheS.Xml;
 
 namespace TheS.ServiceModel.Channels
 {
@@ -469,7 +470,7 @@ namespace TheS.ServiceModel.Channels
                     }
                     else
                     {
-                        xmlReader = XmlDictionaryReader.CreateMtomReader(stream, JavaMessageEncoderFactory.GetSupportedEncodings(), contentType, this.readerQuotas, this.maxBufferSize, onStreamedReaderClose);
+                        xmlReader = CreateMtomReader(stream, JavaMessageEncoderFactory.GetSupportedEncodings(), contentType, this.readerQuotas, this.maxBufferSize, onStreamedReaderClose);
                     }
                 }
                 else
@@ -607,5 +608,13 @@ namespace TheS.ServiceModel.Channels
             return TextEncoderDefaults.TryGetEncoding(charSet, out tmp);
         }
 
+
+        static public XmlDictionaryReader CreateMtomReader(Stream stream, Encoding[] encodings, string contentType,
+            XmlDictionaryReaderQuotas quotas, int maxBufferSize, OnXmlDictionaryReaderClose onClose)
+        {
+            XmlMtomReader reader = new XmlMtomReader();
+            reader.SetInput(stream, encodings, contentType, quotas, maxBufferSize, onClose);
+            return reader;
+        }
     }
 }
