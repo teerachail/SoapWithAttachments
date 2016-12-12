@@ -94,6 +94,8 @@
     <Compile Include="_Xml\XmlCanonicalWriter.cs" />
     <Compile Include="_Xml\XmlConverter.cs" />
     <Compile Include="_Xml\XmlExceptionHelper.cs" />
+    <Compile Include="_Xml\XmlSwaWriter.cs" />
+    <Compile Include="_Xml\XmlSwaReader.cs" />
     <Compile Include="_Xml\XmlMtomReader.cs" />
     <Compile Include="_Xml\XmlMtomWriter.cs" />
     <Compile Include="_Xml\XmlNodeWriter.cs" />

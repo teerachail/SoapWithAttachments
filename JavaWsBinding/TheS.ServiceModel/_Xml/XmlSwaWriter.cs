@@ -15,7 +15,7 @@ namespace TheS.Xml
     using System.Runtime.Serialization;
     using ServiceModel;
 
-    class XmlMtomWriter : XmlDictionaryWriter, IXmlMtomWriterInitializer
+    class XmlSwaWriter : XmlDictionaryWriter, IXmlMtomWriterInitializer
     {
         // Maximum number of bytes that are inlined as base64 data without being MTOM-optimized as xop:Include
         const int MaxInlinedBytes = 767;  // 768 will be the first MIMEd length
@@ -41,7 +41,7 @@ namespace TheS.Xml
         bool isClosed;
         bool ownsStream;
 
-        public XmlMtomWriter()
+        public XmlSwaWriter()
         {
         }
 
@@ -148,7 +148,7 @@ namespace TheS.Xml
             StringBuilder contentTypeBuilder = new StringBuilder(
                 String.Format(CultureInfo.InvariantCulture, "{0}/{1};{2}=\"{3}\";{4}=\"{5}\"",
                     MtomGlobals.MediaType, MtomGlobals.MediaSubtype,
-                    MtomGlobals.TypeParam, MtomGlobals.XopType,
+                    MtomGlobals.TypeParam, MtomGlobals.SwaType,
                     MtomGlobals.BoundaryParam, boundary));
 
             if (startUri != null && startUri.Length > 0)
@@ -162,7 +162,7 @@ namespace TheS.Xml
 
         static string GetContentTypeForRootMimePart(Encoding encoding, string startInfo)
         {
-            string contentType = String.Format(CultureInfo.InvariantCulture, "{0};{1}={2}", MtomGlobals.XopType, MtomGlobals.CharsetParam, CharSet(encoding));
+            string contentType = String.Format(CultureInfo.InvariantCulture, "{0};{1}={2}", MtomGlobals.SwaType, MtomGlobals.CharsetParam, CharSet(encoding));
 
             if (startInfo != null)
                 contentType = String.Format(CultureInfo.InvariantCulture, "{0};{1}=\"{2}\"", contentType, MtomGlobals.TypeParam, startInfo);
@@ -900,403 +900,21 @@ namespace TheS.Xml
 
             static int GetSize(string contentID, string contentType, string contentTransferEncoding, int sizeOfBufferedBinaryData, int maxSizeInBytes)
             {
-                int size = XmlMtomWriter.ValidateSizeOfMessage(maxSizeInBytes, 0, MimeGlobals.CRLF.Length * 3);
+                int size = XmlSwaWriter.ValidateSizeOfMessage(maxSizeInBytes, 0, MimeGlobals.CRLF.Length * 3);
                 if (contentTransferEncoding != null)
-                    size += XmlMtomWriter.ValidateSizeOfMessage(maxSizeInBytes, size, MimeWriter.GetHeaderSize(MimeGlobals.ContentTransferEncodingHeader, contentTransferEncoding, maxSizeInBytes));
+                    size += XmlSwaWriter.ValidateSizeOfMessage(maxSizeInBytes, size, MimeWriter.GetHeaderSize(MimeGlobals.ContentTransferEncodingHeader, contentTransferEncoding, maxSizeInBytes));
                 if (contentType != null)
-                    size += XmlMtomWriter.ValidateSizeOfMessage(maxSizeInBytes, size, MimeWriter.GetHeaderSize(MimeGlobals.ContentTypeHeader, contentType, maxSizeInBytes));
+                    size += XmlSwaWriter.ValidateSizeOfMessage(maxSizeInBytes, size, MimeWriter.GetHeaderSize(MimeGlobals.ContentTypeHeader, contentType, maxSizeInBytes));
                 if (contentID != null)
                 {
-                    size += XmlMtomWriter.ValidateSizeOfMessage(maxSizeInBytes, size, MimeWriter.GetHeaderSize(MimeGlobals.ContentIDHeader, contentID, maxSizeInBytes));
-                    size += XmlMtomWriter.ValidateSizeOfMessage(maxSizeInBytes, size, 2); // include '<' and '>'
+                    size += XmlSwaWriter.ValidateSizeOfMessage(maxSizeInBytes, size, MimeWriter.GetHeaderSize(MimeGlobals.ContentIDHeader, contentID, maxSizeInBytes));
+                    size += XmlSwaWriter.ValidateSizeOfMessage(maxSizeInBytes, size, 2); // include '<' and '>'
                 }
-                size += XmlMtomWriter.ValidateSizeOfMessage(maxSizeInBytes, size, sizeOfBufferedBinaryData);
+                size += XmlSwaWriter.ValidateSizeOfMessage(maxSizeInBytes, size, sizeOfBufferedBinaryData);
                 return size;
             }
         }
     }
 
-
-    internal static class MtomGlobals
-    {
-        internal static string XopIncludeLocalName = "Include";
-        internal static string XopIncludeNamespace = "http://www.w3.org/2004/08/xop/include";
-        internal static string XopIncludePrefix = "xop";
-        internal static string XopIncludeHrefLocalName = "href";
-        internal static string XopIncludeHrefNamespace = String.Empty;
-        internal static string MediaType = "multipart";
-        internal static string MediaSubtype = "related";
-        internal static string BoundaryParam = "boundary";
-        internal static string TypeParam = "type";
-        internal static string XopMediaType = "application";
-        internal static string XopMediaSubtype = "xop+xml";
-        internal static string SwaMediaType = "text";
-        internal static string SwaMediaSubType = "xml";
-        internal static string XopType = "application/xop+xml";
-        internal static string SwaType = "text/xml";
-        internal static string StartParam = "start";
-        internal static string StartInfoParam = "start-info";
-        internal static string ActionParam = "action";
-        internal static string CharsetParam = "charset";
-        internal static string MimeContentTypeLocalName = "contentType";
-        internal static string MimeContentTypeNamespace200406 = "http://www.w3.org/2004/06/xmlmime";
-        internal static string MimeContentTypeNamespace200505 = "http://www.w3.org/2005/05/xmlmime";
-        internal static string DefaultContentTypeForBinary = "application/octet-stream";
-    }
-
-    internal static class MimeGlobals
-    {
-        internal static string MimeVersionHeader = "MIME-Version";
-        internal static string DefaultVersion = "1.0";
-        internal static string ContentIDScheme = "cid:";
-        internal static string ContentIDHeader = "Content-ID";
-        internal static string ContentTypeHeader = "Content-Type";
-        internal static string ContentTransferEncodingHeader = "Content-Transfer-Encoding";
-        internal static string EncodingBinary = "binary";
-        internal static string Encoding8bit = "8bit";
-        internal static byte[] COLONSPACE = new byte[] { (byte)':', (byte)' ' };
-        internal static byte[] DASHDASH = new byte[] { (byte)'-', (byte)'-' };
-        internal static byte[] CRLF = new byte[] { (byte)'\r', (byte)'\n' };
-        // Per RFC2045, preceding CRLF sequence is part of the boundary. MIME boundary tags begin with --
-        internal static byte[] BoundaryPrefix = new byte[] { (byte)'\r', (byte)'\n', (byte)'-', (byte)'-' };
-    }
-
-    enum MimeWriterState
-    {
-        Start,
-        StartPreface,
-        StartPart,
-        Header,
-        Content,
-        Closed,
-    }
-
-    internal class MimeWriter
-    {
-        Stream stream;
-        byte[] boundaryBytes;
-        MimeWriterState state;
-        BufferedWrite bufferedWrite;
-        Stream contentStream;
-
-        internal MimeWriter(Stream stream, string boundary)
-        {
-            if (stream == null)
-                throw DiagnosticUtility.ExceptionUtility.ThrowHelperArgumentNull("stream");
-            if (boundary == null)
-                throw DiagnosticUtility.ExceptionUtility.ThrowHelperArgumentNull("boundary");
-
-            this.stream = stream;
-            this.boundaryBytes = MimeWriter.GetBoundaryBytes(boundary);
-            this.state = MimeWriterState.Start;
-            this.bufferedWrite = new BufferedWrite();
-        }
-
-        internal static int GetHeaderSize(string name, string value, int maxSizeInBytes)
-        {
-            if (name == null)
-                throw DiagnosticUtility.ExceptionUtility.ThrowHelperArgumentNull("name");
-            if (value == null)
-                throw DiagnosticUtility.ExceptionUtility.ThrowHelperArgumentNull("value");
-
-            int size = XmlMtomWriter.ValidateSizeOfMessage(maxSizeInBytes, 0, MimeGlobals.COLONSPACE.Length + MimeGlobals.CRLF.Length);
-            size += XmlMtomWriter.ValidateSizeOfMessage(maxSizeInBytes, size, name.Length);
-            size += XmlMtomWriter.ValidateSizeOfMessage(maxSizeInBytes, size, value.Length);
-            return size;
-        }
-
-        internal static byte[] GetBoundaryBytes(string boundary)
-        {
-            byte[] boundaryBytes = new byte[boundary.Length + MimeGlobals.BoundaryPrefix.Length];
-            for (int i = 0; i < MimeGlobals.BoundaryPrefix.Length; i++)
-                boundaryBytes[i] = MimeGlobals.BoundaryPrefix[i];
-            Encoding.ASCII.GetBytes(boundary, 0, boundary.Length, boundaryBytes, MimeGlobals.BoundaryPrefix.Length);
-            return boundaryBytes;
-        }
-
-        internal MimeWriterState WriteState
-        {
-            get
-            {
-                return state;
-            }
-        }
-
-        internal int GetBoundarySize()
-        {
-            return this.boundaryBytes.Length;
-        }
-
-        internal void StartPreface()
-        {
-            if (state != MimeWriterState.Start)
-                throw DiagnosticUtility.ExceptionUtility.ThrowHelperError(new InvalidOperationException(string.Format("SR.MimeWriterInvalidStateForStartPreface, {0}", state.ToString())));
-
-            state = MimeWriterState.StartPreface;
-        }
-
-        internal void StartPart()
-        {
-            switch (state)
-            {
-                case MimeWriterState.StartPart:
-                case MimeWriterState.Closed:
-                    throw DiagnosticUtility.ExceptionUtility.ThrowHelperError(new InvalidOperationException(string.Format("SR.MimeWriterInvalidStateForStartPart, {0}", state.ToString())));
-                default:
-                    break;
-            }
-
-            state = MimeWriterState.StartPart;
-
-            if (contentStream != null)
-            {
-                contentStream.Flush();
-                contentStream = null;
-            }
-
-            bufferedWrite.Write(boundaryBytes);
-            bufferedWrite.Write(MimeGlobals.CRLF);
-        }
-
-        internal void Close()
-        {
-            switch (state)
-            {
-                case MimeWriterState.Closed:
-                    throw DiagnosticUtility.ExceptionUtility.ThrowHelperError(new InvalidOperationException(string.Format("SR.MimeWriterInvalidStateForClose, {0}", state.ToString())));
-                default:
-                    break;
-            }
-
-            state = MimeWriterState.Closed;
-
-            if (contentStream != null)
-            {
-                contentStream.Flush();
-                contentStream = null;
-            }
-
-            bufferedWrite.Write(boundaryBytes);
-            bufferedWrite.Write(MimeGlobals.DASHDASH);
-            bufferedWrite.Write(MimeGlobals.CRLF);
-
-            Flush();
-        }
-
-        void Flush()
-        {
-            if (bufferedWrite.Length > 0)
-            {
-                stream.Write(bufferedWrite.GetBuffer(), 0, bufferedWrite.Length);
-                bufferedWrite.Reset();
-            }
-        }
-
-        internal void WriteHeader(string name, string value)
-        {
-            if (name == null)
-                throw DiagnosticUtility.ExceptionUtility.ThrowHelperArgumentNull("name");
-            if (value == null)
-                throw DiagnosticUtility.ExceptionUtility.ThrowHelperArgumentNull("value");
-
-            switch (state)
-            {
-                case MimeWriterState.Start:
-                case MimeWriterState.Content:
-                case MimeWriterState.Closed:
-                    throw DiagnosticUtility.ExceptionUtility.ThrowHelperError(new InvalidOperationException(string.Format("SR.MimeWriterInvalidStateForHeader, {0}", state.ToString())));
-                default:
-                    break;
-            }
-
-            state = MimeWriterState.Header;
-
-            bufferedWrite.Write(name);
-            bufferedWrite.Write(MimeGlobals.COLONSPACE);
-            bufferedWrite.Write(value);
-            bufferedWrite.Write(MimeGlobals.CRLF);
-        }
-
-        internal Stream GetContentStream()
-        {
-            switch (state)
-            {
-                case MimeWriterState.Start:
-                case MimeWriterState.Content:
-                case MimeWriterState.Closed:
-                    throw DiagnosticUtility.ExceptionUtility.ThrowHelperError(new InvalidOperationException(string.Format("SR.MimeWriterInvalidStateForContent, {0}", state.ToString())));
-                default:
-                    break;
-            }
-
-            state = MimeWriterState.Content;
-
-            bufferedWrite.Write(MimeGlobals.CRLF);
-
-            Flush();
-
-            contentStream = stream;
-
-            return contentStream;
-        }
-    }
-
-    internal class BufferedWrite
-    {
-        byte[] buffer;
-        int offset;
-
-        internal BufferedWrite()
-            : this(256)
-        {
-        }
-
-        internal BufferedWrite(int initialSize)
-        {
-            buffer = new byte[initialSize];
-        }
-
-        void EnsureBuffer(int count)
-        {
-            int currSize = buffer.Length;
-            if (count > currSize - offset)
-            {
-                int newSize = currSize;
-                do
-                {
-                    if (newSize == Int32.MaxValue)
-                        throw DiagnosticUtility.ExceptionUtility.ThrowHelperError(new XmlException("SR.WriteBufferOverflow"));
-                    newSize = (newSize < Int32.MaxValue / 2) ? newSize * 2 : Int32.MaxValue;
-                }
-                while (count > newSize - offset);
-                byte[] newBuffer = new byte[newSize];
-                Buffer.BlockCopy(buffer, 0, newBuffer, 0, offset);
-                buffer = newBuffer;
-            }
-        }
-
-        internal int Length
-        {
-            get
-            {
-                return offset;
-            }
-        }
-
-        internal byte[] GetBuffer()
-        {
-            return buffer;
-        }
-
-        internal void Reset()
-        {
-            offset = 0;
-        }
-
-        internal void Write(byte[] value)
-        {
-            Write(value, 0, value.Length);
-        }
-
-        internal void Write(byte[] value, int index, int count)
-        {
-            EnsureBuffer(count);
-            Buffer.BlockCopy(value, index, buffer, offset, count);
-            offset += count;
-        }
-
-        internal void Write(string value)
-        {
-            Write(value, 0, value.Length);
-        }
-
-        internal void Write(string value, int index, int count)
-        {
-            EnsureBuffer(count);
-            for (int i = 0; i < count; i++)
-            {
-                char c = value[index + i];
-                if ((ushort)c > 0xFF)
-                    throw DiagnosticUtility.ExceptionUtility.ThrowHelperError(new FormatException(string.Format("SR.MimeHeaderInvalidCharacter, {0}, {1}", c, ((int)c).ToString("X", CultureInfo.InvariantCulture))));
-                buffer[offset + i] = (byte)c;
-            }
-            offset += count;
-        }
-
-#if NO
-        internal void Write(byte value)
-        {
-            EnsureBuffer(1);
-            buffer[offset++] = value;
-        }
-
-        internal void Write(char value)
-        {
-            EnsureBuffer(1);
-            if ((ushort)value > 0xFF)
-                throw DiagnosticUtility.ExceptionUtility.ThrowHelperError(new FormatException(SR.GetString(SR.MimeHeaderInvalidCharacter, value, ((int)value).ToString("X", CultureInfo.InvariantCulture)))));
-            buffer[offset++] = (byte)value;
-        }
-
-        internal void Write(int value)
-        {
-            Write(value.ToString());
-        }
-
-        internal void Write(char[] value)
-        {
-            Write(value, 0, value.Length);
-        }
-
-        internal void Write(char[] value, int index, int count)
-        {
-            EnsureBuffer(count);
-            for (int i = 0; i < count; i++)
-            {
-                char c = value[index + i];
-                if ((ushort)c > 0xFF)
-                    throw DiagnosticUtility.ExceptionUtility.ThrowHelperError(new FormatException(SR.GetString(SR.MimeHeaderInvalidCharacter, c, ((int)c).ToString("X", CultureInfo.InvariantCulture)))));
-                buffer[offset + i] = (byte)c;
-            }
-            offset += count;
-        }
-
-#endif
-
-    }
-
-    enum MtomBinaryDataType { Provider, Segment }
-
-    class MtomBinaryData
-    {
-        internal MtomBinaryDataType type;
-
-        internal IStreamProvider provider;
-        internal byte[] chunk;
-
-        internal MtomBinaryData(IStreamProvider provider)
-        {
-            this.type = MtomBinaryDataType.Provider;
-            this.provider = provider;
-        }
-
-        internal MtomBinaryData(byte[] buffer, int offset, int count)
-        {
-            this.type = MtomBinaryDataType.Segment;
-            this.chunk = new byte[count];
-            Buffer.BlockCopy(buffer, offset, this.chunk, 0, count);
-        }
-
-        internal long Length
-        {
-            get
-            {
-                if (this.type == MtomBinaryDataType.Segment)
-                    return this.chunk.Length;
-
-                return -1;
-            }
-        }
-    }
 }
 

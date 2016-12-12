@@ -256,7 +256,16 @@ namespace TheS.ServiceModel.Channels
         private MessageVersion version;
         private MessageEncoder innerMessageEncoder;
 
+        internal const string DefaultNamespace = "http://tempuri.org/";
+        const string mtomMediaType = "multipart/related";
+        //const string mtomContentType = mtomMediaType + "; type=\"application/xop+xml\"";
+        //const string mtomStartUri = NamingHelper.DefaultNamespace + "0";
+        const string swaContentType = mtomMediaType + "; type=\"text/xml\"";
+        const string swaStartUri = DefaultNamespace + "0";
+
+        volatile SynchronizedPool<XmlDictionaryWriter> streamedWriterPool;
         volatile SynchronizedPool<XmlDictionaryReader> streamedReaderPool;
+
         object thisLock;
         const int maxPooledXmlReadersPerMessage = 2;
         int maxReadPoolSize;
@@ -318,7 +327,7 @@ namespace TheS.ServiceModel.Channels
         {
             get
             {
-                return this.innerMessageEncoder.ContentType;
+                return swaContentType;
             }
         }
 
@@ -363,38 +372,6 @@ namespace TheS.ServiceModel.Channels
 
         public override Message ReadMessage(ArraySegment<byte> buffer, BufferManager bufferManager, string contentType)
         {
-            //if (bufferManager == null)
-            //    throw new ArgumentNullException("bufferManager");
-
-            //if (contentType == this.ContentType)
-            //    contentType = null;
-
-            ////if (TD.MtomMessageDecodingStartIsEnabled())
-            ////{
-            ////    TD.MtomMessageDecodingStart();
-            ////}
-
-            //MtomBufferedMessageData messageData = TakeBufferedReader();
-            //messageData.ContentType = contentType;
-            //messageData.Open(buffer, bufferManager);
-            //RecycledMessageState messageState = messageData.TakeMessageState();
-            //if (messageState == null)
-            //    messageState = new RecycledMessageState();
-            //Message message = new BufferedMessage(messageData, messageState);
-            //message.Properties.Encoder = this;
-            ////if (MessageLogger.LogMessagesAtTransportLevel)
-            ////    MessageLogger.LogMessage(ref message, MessageLoggingSource.TransportReceive);
-
-            ////if (TD.MessageReadByEncoderIsEnabled() && buffer != null)
-            ////{
-            ////    TD.MessageReadByEncoder(
-            ////        EventTraceActivityHelper.TryExtractActivity(message, true),
-            ////        buffer.Count,
-            ////        this);
-            ////}
-
-            //return message;
-
             throw new NotSupportedException();
         }
 
@@ -406,43 +383,85 @@ namespace TheS.ServiceModel.Channels
             if (contentType == this.ContentType)
                 contentType = null;
 
-            //if (TD.MtomMessageDecodingStartIsEnabled())
-            //{
-            //    TD.MtomMessageDecodingStart();
-            //}
-
             XmlReader reader = TakeStreamedReader(stream, contentType);
             Message message = Message.CreateMessage(reader, maxSizeOfHeaders, version);
             message.Properties.Encoder = this;
 
-            //if (TD.StreamedMessageReadByEncoderIsEnabled())
-            //{
-            //    TD.StreamedMessageReadByEncoder(EventTraceActivityHelper.TryExtractActivity(message, true));
-            //}
-
-            //if (MessageLogger.LogMessagesAtTransportLevel)
-            //    MessageLogger.LogMessage(ref message, MessageLoggingSource.TransportReceive);
             return message;
         }
 
-        //public override Message ReadMessage(ArraySegment<byte> buffer, BufferManager bufferManager, string contentType)
-        //{
-        //    return this.innerMessageEncoder.ReadMessage(buffer, bufferManager, contentType);
-        //}
-
-        //public override Message ReadMessage(Stream stream, int maxSizeOfHeaders, string contentType)
-        //{
-        //    return this.innerMessageEncoder.ReadMessage(stream, maxSizeOfHeaders, contentType);
-        //}
-
         public override void WriteMessage(Message message, Stream stream)
         {
-            this.innerMessageEncoder.WriteMessage(message, stream);
+            WriteMessage(message, stream, GenerateStartInfoString(), null, null, true /*writeMessageHeaders*/);
+        }
+
+        internal void WriteMessage(Message message, Stream stream, string boundary)
+        {
+            WriteMessage(message, stream, GenerateStartInfoString(), boundary, swaStartUri, false /*writeMessageHeaders*/);
         }
 
         public override ArraySegment<byte> WriteMessage(Message message, int maxMessageSize, BufferManager bufferManager, int messageOffset)
         {
-            return this.innerMessageEncoder.WriteMessage(message, maxMessageSize, bufferManager, messageOffset);
+            //return this.innerMessageEncoder.WriteMessage(message, maxMessageSize, bufferManager, messageOffset);
+            throw new NotSupportedException();
+        }
+
+        string GenerateStartInfoString()
+        {
+            return (version.Envelope == EnvelopeVersion.Soap12) ? JavaMessageEncoderFactory.Soap12MediaType : JavaMessageEncoderFactory.Soap11MediaType;
+        }
+
+        void WriteMessage(Message message, Stream stream, string startInfo, string boundary, string startUri, bool writeMessageHeaders)
+        {
+            if (message == null)
+                throw DiagnosticUtility.ExceptionUtility.ThrowHelperError(new ArgumentNullException("message"));
+            if (stream == null)
+                throw new ArgumentNullException("stream");
+            ThrowIfMismatchedMessageVersion(message);
+
+            //EventTraceActivity eventTraceActivity = null;
+            //if (TD.MtomMessageEncodingStartIsEnabled())
+            //{
+            //    eventTraceActivity = EventTraceActivityHelper.TryExtractActivity(message);
+            //    TD.MtomMessageEncodingStart(eventTraceActivity);
+            //}
+
+            message.Properties.Encoder = this;
+            //if (MessageLogger.LogMessagesAtTransportLevel)
+            //    MessageLogger.LogMessage(ref message, MessageLoggingSource.TransportSend);
+            XmlDictionaryWriter xmlWriter = TakeStreamedWriter(stream, startInfo, boundary, startUri, writeMessageHeaders);
+            if (this.writeEncoding.WebName == "utf-8")
+            {
+                message.WriteMessage(xmlWriter);
+            }
+            else
+            {
+                xmlWriter.WriteStartDocument();
+                message.WriteMessage(xmlWriter);
+                xmlWriter.WriteEndDocument();
+            }
+            xmlWriter.Flush();
+            ReturnStreamedWriter(xmlWriter);
+
+            //if (TD.StreamedMessageWrittenByEncoderIsEnabled())
+            //{
+            //    TD.StreamedMessageWrittenByEncoder(eventTraceActivity ?? EventTraceActivityHelper.TryExtractActivity(message));
+            //}
+        }
+
+        public override IAsyncResult BeginWriteMessage(Message message, Stream stream, AsyncCallback callback, object state)
+        {
+            return new WriteMessageAsyncResult(message, stream, this, callback, state);
+        }
+
+        internal IAsyncResult BeginWriteMessage(Message message, Stream stream, string boundary, AsyncCallback callback, object state)
+        {
+            return new WriteMessageAsyncResult(message, stream, boundary, this, callback, state);
+        }
+
+        public override void EndWriteMessage(IAsyncResult result)
+        {
+            WriteMessageAsyncResult.End(result);
         }
 
         XmlReader TakeStreamedReader(Stream stream, string contentType)
@@ -459,7 +478,6 @@ namespace TheS.ServiceModel.Channels
             }
 
             XmlDictionaryReader xmlReader = streamedReaderPool.Take();
-            //XmlDictionaryReader xmlReader = null;
             try
             {
                 if (contentType == null || IsMTOMContentType(contentType))
@@ -470,7 +488,7 @@ namespace TheS.ServiceModel.Channels
                     }
                     else
                     {
-                        xmlReader = CreateMtomReader(stream, JavaMessageEncoderFactory.GetSupportedEncodings(), contentType, this.readerQuotas, this.maxBufferSize, onStreamedReaderClose);
+                        xmlReader = CreateSwaReader(stream, JavaMessageEncoderFactory.GetSupportedEncodings(), contentType, this.readerQuotas, this.maxBufferSize, onStreamedReaderClose);
                     }
                 }
                 else
@@ -502,6 +520,41 @@ namespace TheS.ServiceModel.Channels
         void ReturnStreamedReader(XmlDictionaryReader xmlReader)
         {
             streamedReaderPool.Return(xmlReader);
+        }
+
+
+        XmlDictionaryWriter TakeStreamedWriter(Stream stream, string startInfo, string boundary, string startUri, bool writeMessageHeaders)
+        {
+            if (streamedWriterPool == null)
+            {
+                lock (thisLock)
+                {
+                    if (streamedWriterPool == null)
+                    {
+                        streamedWriterPool = new SynchronizedPool<XmlDictionaryWriter>(maxWritePoolSize);
+                    }
+                }
+            }
+            XmlDictionaryWriter xmlWriter = streamedWriterPool.Take();
+            if (xmlWriter == null)
+            {
+                xmlWriter = CreateSwaWriter(stream, this.writeEncoding, int.MaxValue, startInfo, boundary, startUri, writeMessageHeaders, false);
+                //if (TD.WritePoolMissIsEnabled())
+                //{
+                //    TD.WritePoolMiss(xmlWriter.GetType().Name);
+                //}
+            }
+            else
+            {
+                ((IXmlMtomWriterInitializer)xmlWriter).SetOutput(stream, this.writeEncoding, int.MaxValue, startInfo, boundary, startUri, writeMessageHeaders, false);
+            }
+            return xmlWriter;
+        }
+
+        void ReturnStreamedWriter(XmlDictionaryWriter xmlWriter)
+        {
+            xmlWriter.Close();
+            streamedWriterPool.Return(xmlWriter);
         }
 
         internal bool IsMTOMContentType(string contentType)
@@ -615,6 +668,71 @@ namespace TheS.ServiceModel.Channels
             XmlMtomReader reader = new XmlMtomReader();
             reader.SetInput(stream, encodings, contentType, quotas, maxBufferSize, onClose);
             return reader;
+        }
+
+        static public XmlDictionaryReader CreateSwaReader(Stream stream, Encoding[] encodings, string contentType,
+            XmlDictionaryReaderQuotas quotas, int maxBufferSize, OnXmlDictionaryReaderClose onClose)
+        {
+            XmlSwaReader reader = new XmlSwaReader();
+            reader.SetInput(stream, encodings, contentType, quotas, maxBufferSize, onClose);
+            return reader;
+        }
+
+        static public XmlDictionaryWriter CreateSwaWriter(Stream stream, Encoding encoding, int maxSizeInBytes, string startInfo, string boundary, string startUri, bool writeMessageHeaders, bool ownsStream)
+        {
+            XmlSwaWriter writer = new XmlSwaWriter();
+            writer.SetOutput(stream, encoding, maxSizeInBytes, startInfo, boundary, startUri, writeMessageHeaders, ownsStream);
+            return writer;
+        }
+
+        private void ThrowIfMismatchedMessageVersion(Message message)
+        {
+            if (message.Version != MessageVersion)
+            {
+                throw new ProtocolException(string.Format("SR.EncoderMessageVersionMismatch, {0}, {1}, {2}", message.Version, MessageVersion,
+                    message));
+            }
+        }
+
+        class WriteMessageAsyncResult : ScheduleActionItemAsyncResult
+        {
+            string boundary;
+            JavaMessageEncoder encoder;
+            Message message;
+            Stream stream;
+            bool writeBoundary;
+
+            public WriteMessageAsyncResult(Message message, Stream stream, JavaMessageEncoder encoder, AsyncCallback callback, object state)
+                : base(callback, state)
+            {
+                Fx.Assert(encoder != null, "encoder should never be null");
+
+                this.encoder = encoder;
+                this.message = message;
+                this.stream = stream;
+
+                Schedule();
+            }
+
+            public WriteMessageAsyncResult(Message message, Stream stream, string boundary, JavaMessageEncoder encoder, AsyncCallback callback, object state)
+                : base(callback, state)
+            {
+                Fx.Assert(encoder != null, "encoder should never be null");
+
+                this.encoder = encoder;
+                this.message = message;
+                this.stream = stream;
+                this.boundary = boundary;
+
+                this.writeBoundary = true;
+
+                Schedule();
+            }
+
+            protected override void OnDoWork()
+            {
+                this.encoder.WriteMessage(this.message, this.stream, this.encoder.GenerateStartInfoString(), string.IsNullOrEmpty(this.boundary) ? null : this.boundary, this.writeBoundary ? JavaMessageEncoder.swaStartUri : null, !this.writeBoundary /*writeMessageHeaders*/);
+            }
         }
     }
 }
