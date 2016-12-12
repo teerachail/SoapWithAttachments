@@ -17,10 +17,6 @@ namespace TheS.ServiceModel.Channels
     class JavaMessageEncoderFactory : MessageEncoderFactory
     {
         private JavaMessageEncoder encoder;
-        //private MessageVersion version;
-
-        //private XmlDictionaryReaderQuotas readerQuotas;
-        //private int maxBufferSize;
 
         internal static ContentEncoding[] Soap11Content = GetContentEncodingMap(MessageVersion.Soap11WSAddressing10);
         internal static ContentEncoding[] Soap12Content = GetContentEncodingMap(MessageVersion.Soap12WSAddressing10);
@@ -31,10 +27,6 @@ namespace TheS.ServiceModel.Channels
 
         public JavaMessageEncoderFactory(MessageVersion version, Encoding writeEncoding, int maxReadPoolSize, int maxWritePoolSize, int maxBufferSize, XmlDictionaryReaderQuotas quotas)
         {
-            //this.version = version;
-            //this.readerQuotas = readerQuotas;
-            //this.maxBufferSize = maxBufferSize;
-
             this.encoder = new JavaMessageEncoder(version, writeEncoding, maxReadPoolSize, maxWritePoolSize, maxBufferSize, quotas);
         }
 

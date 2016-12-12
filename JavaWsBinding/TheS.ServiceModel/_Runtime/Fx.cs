@@ -276,6 +276,9 @@ namespace TheS.Runtime
             }
         }
 
+        // TODO: Fix this HACK
+        public static bool FastDebug { get { return true; } }
+
 #if DEBUG
         private static bool TryGetDebugSwitch(string name, out object value)
         {
