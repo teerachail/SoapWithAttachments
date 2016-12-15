@@ -559,7 +559,7 @@ namespace TheS.ServiceModel.Channels
 
         internal bool IsMTOMContentType(string contentType)
         {
-            // check for MTOM contentType: multipart/related; type=\"application/xop+xml\"
+            // check for MTOM contentType: multipart/related; type=\"text/xml\"
             return IsContentTypeSupported(contentType, this.ContentType, this.MediaType);
         }
 
