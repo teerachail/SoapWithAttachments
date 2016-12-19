@@ -392,18 +392,19 @@ namespace TheS.ServiceModel.Channels
 
         public override void WriteMessage(Message message, Stream stream)
         {
-            WriteMessage(message, stream, GenerateStartInfoString(), null, null, true /*writeMessageHeaders*/);
+            this.innerMessageEncoder.WriteMessage(message, stream);
+            //WriteMessage(message, stream, GenerateStartInfoString(), null, null, true /*writeMessageHeaders*/);
         }
 
-        internal void WriteMessage(Message message, Stream stream, string boundary)
-        {
-            WriteMessage(message, stream, GenerateStartInfoString(), boundary, swaStartUri, false /*writeMessageHeaders*/);
-        }
+        //internal void WriteMessage(Message message, Stream stream, string boundary)
+        //{
+        //    WriteMessage(message, stream, GenerateStartInfoString(), boundary, swaStartUri, false /*writeMessageHeaders*/);
+        //}
 
         public override ArraySegment<byte> WriteMessage(Message message, int maxMessageSize, BufferManager bufferManager, int messageOffset)
         {
-            //return this.innerMessageEncoder.WriteMessage(message, maxMessageSize, bufferManager, messageOffset);
-            throw new NotSupportedException();
+            return this.innerMessageEncoder.WriteMessage(message, maxMessageSize, bufferManager, messageOffset);
+            //throw new NotSupportedException();
         }
 
         string GenerateStartInfoString()
@@ -449,20 +450,20 @@ namespace TheS.ServiceModel.Channels
             //}
         }
 
-        public override IAsyncResult BeginWriteMessage(Message message, Stream stream, AsyncCallback callback, object state)
-        {
-            return new WriteMessageAsyncResult(message, stream, this, callback, state);
-        }
+        //public override IAsyncResult BeginWriteMessage(Message message, Stream stream, AsyncCallback callback, object state)
+        //{
+        //    return new WriteMessageAsyncResult(message, stream, this, callback, state);
+        //}
 
-        internal IAsyncResult BeginWriteMessage(Message message, Stream stream, string boundary, AsyncCallback callback, object state)
-        {
-            return new WriteMessageAsyncResult(message, stream, boundary, this, callback, state);
-        }
+        //internal IAsyncResult BeginWriteMessage(Message message, Stream stream, string boundary, AsyncCallback callback, object state)
+        //{
+        //    return new WriteMessageAsyncResult(message, stream, boundary, this, callback, state);
+        //}
 
-        public override void EndWriteMessage(IAsyncResult result)
-        {
-            WriteMessageAsyncResult.End(result);
-        }
+        //public override void EndWriteMessage(IAsyncResult result)
+        //{
+        //    WriteMessageAsyncResult.End(result);
+        //}
 
         XmlReader TakeStreamedReader(Stream stream, string contentType)
         {
